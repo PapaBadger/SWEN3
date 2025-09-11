@@ -2,7 +2,7 @@
 
 - Remote Repository setup,
   all team members are able to commit/push `DONE`
-- integrate Docker
+- integrate Docker `DONE`
 - REST Server created
    Endpoints defined by the team (code-first)
 - ORM is integrated to persist the entities on the PostgreSQL database, use the repository pattern

@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: dms
+      POSTGRES_USER: dms
+      POSTGRES_PASSWORD: dms
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dms -d dms"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .            # uses your Dockerfile in project root
+      dockerfile: Dockerfile
+    image: pat/swen-dms:latest   # tag the built image (optional)
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
+      SPRING_DATASOURCE_USERNAME: dms
+      SPRING_DATASOURCE_PASSWORD: dms
+    ports: ["8080:8080"]
