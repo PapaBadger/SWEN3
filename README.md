@@ -70,3 +70,35 @@ if conflicts: edit files -> `git add` the fixed files -> `git rebase --continue`
 `git branch -d feature/<short-name>`                  # delete local
 
 `git push origin --delete feature/<short-name>`       # delete remote
+
+
+
+# REST SERVER & DATABASE USE
+
+### How to set up Database (steps for local setup):
+
+1. open pgAdmin
+2. create database, Name: dms
+3. right-click on the database -> Query Tool
+4. execute Command (create db user):
+`CREATE USER dms_admin WITH PASSWORD 'dmsIsVeryCool123';
+GRANT ALL PRIVILEGES ON DATABASE dms TO dms_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO dms_admin;`
+
+if this is not working, look into which port you are using and if the credentials in the application.properties file match the credentials of the dms_admin user in pgAdmin
+
+5. After setting up the DB, start the application, if the db is not connected, the program should terminate
+6. If the application is up and running, go to your cmd and type `curl http://localhost:8080/documents`
+8. Now you can add data within pgAdmin or in the cmd -> command: `curl.exe -i -X POST http://localhost:8080/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
+7. Now you should see something like this: `[{"id":1,"title":"Mein erstes Doc","content":"Hallo DB"}]`
+
+
+## RUNNING THE APP WITH DOCKER
+
+- go into the terminal in IntelliJ
+- Command: `docker compose up -d --build`
+- Command for showing logs: `docker compose logs -f app`
+- At this point, the db is empty, so you have to add data, go into cmd
+- Command: `curl.exe -i -X POST http://localhost:8080/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
+- To show all data -> command: `curl http://localhost:8080/documents`
+- Output something like this: `[{"id":1,"title":"Mein erstes Doc","content":"Hallo DB"}]`
