@@ -102,3 +102,8 @@ if this is not working, look into which port you are using and if the credential
 - Command: `curl.exe -i -X POST http://localhost:8080/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
 - To show all data -> command: `curl http://localhost:8080/documents`
 - Output something like this: `[{"id":1,"title":"Mein erstes Doc","content":"Hallo DB"}]`
+
+
+## STARTING THE TESTS
+
+- `mvn test`

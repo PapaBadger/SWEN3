@@ -14,6 +14,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class DmsApplication {
 
+    /**
+     * Starts the Spring Boot application.
+     *
+     * @param args CLI arguments
+     */
     public static void main(String[] args) {
         SpringApplication.run(DmsApplication.class, args);
     }
