@@ -1,3 +1,6 @@
+# IMPORTANT
+## !! Program only works via Docker. For now local execution isn't possible.
+
 # GIT Usage Basics
 
 ## Start a feature (you currently only have main)
