@@ -1,10 +1,13 @@
-# Features for Sprint 1
+# Features for Sprint 2
+## (Web-)UI
 
-- Remote Repository setup,
-  all team members are able to commit/push `DONE`
-- integrate Docker `DONE`
-- REST Server created `DONE`
-   Endpoints defined by the team (code-first) `DONE`
-- ORM is integrated to persist the entities on the PostgreSQL database, use the repository pattern `DONE`
-- Show correct function with unit-tests, mock out the “production” database `DONE`
-- Initial docker-compose.yml, used to run the REST-server & database inside containers `DONE`
+- Webserver service (e.g. nginx or else) integrated
+- Dashboard and detail-pages are served by the webserver
+- The Webpage communication with the REST server
+- Extend docker-compose.yml to run the UI in an additional container
+
+## MUST-HAVE Check Criteria:
+
+- No build error (docker compose build)
+- docker compose up successfully starts containers
+- GET http://localhost/ returns the functioning paperless-frontend
