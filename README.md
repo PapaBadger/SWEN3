@@ -110,3 +110,20 @@ if this is not working, look into which port you are using and if the credential
 ## STARTING THE TESTS
 
 - `mvn test`
+
+# Angular Frontend (WebUI)
+
+## What you need:
+- [Node.js](https://nodejs.org/) (Version 21 or newer)
+- Angular CLI install:
+  ```bash
+  npm install -g @angular/cli
+  
+- after installing angular, go to frontend/WebUI (in terminal -> cd frontend/WebUI)
+- ```bash
+  npm install
+  
+- now all dependencies should be installed
+- run the project with:
+- ```bash
+  ng serve

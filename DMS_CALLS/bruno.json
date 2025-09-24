@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "DMS_CALLS",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
