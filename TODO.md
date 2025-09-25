@@ -2,6 +2,7 @@
 ## (Web-)UI
 
 - Webserver service (e.g. nginx or else) integrated
+- -- Webpage with Post, Put, Delete, Get functions. 
 - Dashboard and detail-pages are served by the webserver
 - The Webpage communication with the REST server
 - Extend docker-compose.yml to run the UI in an additional container
@@ -11,3 +12,5 @@
 - No build error (docker compose build)
 - docker compose up successfully starts containers
 - GET http://localhost/ returns the functioning paperless-frontend
+
+# !! Deadline 02.10.2025 !!
