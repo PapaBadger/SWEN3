@@ -21,7 +21,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/documents")
+@RequestMapping("/api/documents")
 public class DocumentController {
 
     private final DocumentService service;

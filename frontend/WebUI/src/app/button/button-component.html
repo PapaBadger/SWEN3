@@ -1,9 +1,9 @@
-<mat-divider/>
+
 <section>
   <div class="example-label">Upload</div>
   <div class="example-button-row">
     <button matButton="elevated">Upload Document(POST)</button>
-    <button matButton="elevated">Get list of Docuemnts(GET)</button>
+    <button matButton="elevated" (click)="onGet()">Get list of Docuemnts(GET)</button>
     <button matButton="elevated">Delete Documents(DELETE)</button>
     <button matButton="elevated">Update Documents(PUT)</button>
   </div>
