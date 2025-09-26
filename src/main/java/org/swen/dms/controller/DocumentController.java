@@ -57,4 +57,29 @@ public class DocumentController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+
+    @PostMapping(path = "/upload", consumes = {"multipart/form-data"})
+    public List<Document> uploadDocuments(
+            @RequestParam("files") org.springframework.web.multipart.MultipartFile[] files,
+            @RequestParam(value = "titlePrefix", required = false) String titlePrefix
+    ) {
+        java.util.List<Document> saved = new java.util.ArrayList<>();
+        int idx = 1;
+        for (org.springframework.web.multipart.MultipartFile file : files) {
+            try {
+                Document d = new Document();
+                String title = (titlePrefix == null || titlePrefix.isBlank())
+                        ? file.getOriginalFilename()
+                        : titlePrefix + " " + idx + " - " + file.getOriginalFilename();
+                d.setTitle(title);
+                // Store file content as text for simplicity. Adjust if you have a blob/bytes field.
+                d.setContent(new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8));
+                saved.add(service.create(d));
+                idx++;
+            } catch (java.io.IOException e) {
+                throw new RuntimeException("Failed to read uploaded file: " + file.getOriginalFilename(), e);
+            }
+        }
+        return saved;
+    }
 }

@@ -91,8 +91,8 @@ GRANT USAGE, CREATE ON SCHEMA public TO dms_admin;`
 if this is not working, look into which port you are using and if the credentials in the application.properties file match the credentials of the dms_admin user in pgAdmin
 
 5. After setting up the DB, start the application, if the db is not connected, the program should terminate
-6. If the application is up and running, go to your cmd and type `curl http://localhost:8080/documents`
-8. Now you can add data within pgAdmin or in the cmd -> command: `curl.exe -i -X POST http://localhost:8080/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
+6. If the application is up and running, go to your cmd and type `curl http://localhost:8080//api/documents`
+8. Now you can add data within pgAdmin or in the cmd -> command: `curl.exe -i -X POST http://localhost:8080/api/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
 7. Now you should see something like this: `[{"id":1,"title":"Mein erstes Doc","content":"Hallo DB"}]`
 
 
@@ -102,8 +102,8 @@ if this is not working, look into which port you are using and if the credential
 - Command: `docker compose up -d --build`
 - Command for showing logs: `docker compose logs -f app`
 - At this point, the db is empty, so you have to add data, go into cmd
-- Command: `curl.exe -i -X POST http://localhost:8080/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
-- To show all data -> command: `curl http://localhost:8080/documents`
+- Command: `curl.exe -i -X POST http://localhost:8080/api/documents -H "Content-Type: application/json" -d "{\"title\":\"Mein erstes Doc\",\"content\":\"Hallo DB\"}"`
+- To show all data -> command: `curl http://localhost:8080/api/documents`
 - Output something like this: `[{"id":1,"title":"Mein erstes Doc","content":"Hallo DB"}]`
 
 
