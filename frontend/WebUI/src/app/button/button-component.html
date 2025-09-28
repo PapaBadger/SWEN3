@@ -1,51 +1,74 @@
-<!--
-  button-component.html
-  ---------------------
-  Simple UI to exercise the REST API:
-  - Create: POST a new document with title/content.
-  - Read:   GET all documents.
-  - Update: PUT new title/content for a given ID.
-  - Delete: DELETE a document by ID.
--->
 <section>
-  <div class="example-label">Documents</div>
 
-  <!-- Action row: all CRUD actions + small inputs -->
-  <div class="example-button-row" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+  <!-- GET -->
+  <div class="panel">
+    <h3>Get (GET)</h3>
+    <button class="full" mat-raised-button color="primary" (click)="onGet()">Get documents</button>
+  </div>
 
-    <!-- CREATE (POST) -->
-    <!-- Title/content for the new document; disabled until title is non-empty -->
-    <input type="text" placeholder="New title" [(ngModel)]="newTitle" name="newTitle" />
-    <input type="text" placeholder="New content" [(ngModel)]="newContent" name="newContent" />
-    <button mat-button (click)="onCreate()" [disabled]="creating || !newTitle.trim()">
-      {{ creating ? 'Creating…' : 'Create (POST)' }}
-    </button>
+  <!-- CREATE -->
+  <div class="panel">
+    <h3>Create (POST)</h3>
+    <mat-form-field class="full" appearance="outline">
+      <mat-label>Title</mat-label>
+      <input matInput [(ngModel)]="newTitle" name="newTitle">
+    </mat-form-field>
 
-    <!-- READ (GET) -->
-    <!-- Refresh the list of documents from the backend -->
-    <button mat-button (click)="onGet()">Get (GET)</button>
+    <mat-form-field class="full" appearance="outline">
+      <mat-label>Content</mat-label>
+      <input matInput [(ngModel)]="newContent" name="newContent">
+    </mat-form-field>
 
-    <!-- UPDATE (PUT) -->
-    <!-- Provide id to update; new title/content are applied as-is -->
-    <input type="number" placeholder="ID to update" [(ngModel)]="updateId" name="updateId" />
-    <input type="text" placeholder="New title (optional)" [(ngModel)]="updateTitle" name="updateTitle" />
-    <input type="text" placeholder="New content (optional)" [(ngModel)]="updateContent" name="updateContent" />
-    <button mat-button (click)="onUpdate()" [disabled]="updating || !updateId">
-      {{ updating ? 'Updating…' : 'Update (PUT)' }}
-    </button>
-
-    <!-- DELETE -->
-    <!-- Remove a document by id -->
-    <input type="number" placeholder="ID to delete" [(ngModel)]="deleteId" name="deleteId" />
-    <button mat-button (click)="onDelete()" [disabled]="deleting || !deleteId">
-      {{ deleting ? 'Deleting…' : 'Delete (DELETE)' }}
+    <button class="full" mat-raised-button color="accent"
+            (click)="onCreate()" [disabled]="creating || !newTitle?.trim()">
+      {{ creating ? 'Creating…' : 'Create' }}
     </button>
   </div>
 
+  <!-- UPDATE -->
+  <div class="panel">
+    <h3>Update (PUT)</h3>
+    <mat-form-field class="full" appearance="outline">
+      <mat-label>ID to update</mat-label>
+      <input matInput type="number" [(ngModel)]="updateId" name="updateId">
+    </mat-form-field>
+
+    <mat-form-field class="full" appearance="outline">
+      <mat-label>New title (optional)</mat-label>
+      <input matInput [(ngModel)]="updateTitle" name="updateTitle">
+    </mat-form-field>
+
+    <mat-form-field class="full" appearance="outline">
+      <mat-label>New content (optional)</mat-label>
+      <input matInput [(ngModel)]="updateContent" name="updateContent">
+    </mat-form-field>
+
+    <button class="full" mat-raised-button color="primary"
+            (click)="onUpdate()" [disabled]="updating || !updateId">
+      {{ updating ? 'Updating…' : 'Update' }}
+    </button>
+  </div>
+
+  <!-- DELETE -->
+  <div class="panel">
+    <h3>Delete (DELETE)</h3>
+    <mat-form-field class="full" appearance="outline">
+      <mat-label>ID to delete</mat-label>
+      <input matInput type="number" [(ngModel)]="deleteId" name="deleteId">
+    </mat-form-field>
+
+    <button class="full" mat-raised-button color="warn"
+            (click)="onDelete()" [disabled]="deleting || !deleteId">
+      {{ deleting ? 'Deleting…' : 'Delete' }}
+    </button>
+  </div>
+
+  <mat-divider style="margin:16px 0;"></mat-divider>
+
   <!-- Results -->
-  <!-- Results list: rendered only when documents array has items -->
-  <div *ngIf="documents?.length" style="margin-top:12px;">
-    <div *ngFor="let d of documents" style="padding:6px 0; border-bottom:1px solid #eee;">
+  <div *ngIf="documents?.length" class="panel">
+    <h3>Documents</h3>
+    <div *ngFor="let d of documents" class="row">
       <strong>#{{ d.id }}</strong> — {{ d.title }} — {{ d.content }}
     </div>
   </div>

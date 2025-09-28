@@ -72,7 +72,6 @@ public class DocumentController {
                         ? file.getOriginalFilename()
                         : titlePrefix + " " + idx + " - " + file.getOriginalFilename();
                 d.setTitle(title);
-                // Store file content as text for simplicity. Adjust if you have a blob/bytes field.
                 d.setContent(new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8));
                 saved.add(service.create(d));
                 idx++;

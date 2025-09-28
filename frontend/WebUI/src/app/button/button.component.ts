@@ -3,6 +3,11 @@ import {MatIconModule} from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import {MatButtonModule} from '@angular/material/button';
 import {DataService, DocumentDto} from '../DataService/DataService';
+import {MatInputModule} from '@angular/material/input';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatList} from '@angular/material/list';
+import {MatListItem} from '@angular/material/list';
 import {FormsModule} from '@angular/forms';
 
 /**
@@ -28,7 +33,12 @@ import {FormsModule} from '@angular/forms';
     CommonModule,
     MatButtonModule,
     MatIconModule,
-    FormsModule]
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDividerModule,
+    MatList,
+    MatListItem]
 })
 export class ButtonOverviewExample {
   /** Current list shown in the UI (filled by GET). */
