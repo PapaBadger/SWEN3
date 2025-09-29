@@ -1,17 +1,20 @@
-# Features for Sprint 2
-## (Web-)UI
+# Features for Sprint 3
+## Queues Integration:
 
-- Webserver service (e.g. nginx or else) integrated `DONE`
-- -- Webpage with Post, Put, Delete, Get functions. `DONE`
-- Dashboard and detail-pages are served by the webserver `DONE`
-- The Webpage communication with the REST server `DONE`
-- Extend docker-compose.yml to run the UI in an additional container `DONE`
+- Extend docker-compose.yml to run RabbitMQ in a container
+- Integrate Queues into REST Server
+- on document upload the REST-Server should also
+- -  send a message to the RabbitMQ
+- -  will be processed by an "empty" OCR-worker
+- Failure/exception-handling (with layer-specific exceptions) implemented
+- Logging in remarkable/critical positions integrated
+- Prepare for the mid-term Code-Review
+
 
 ## MUST-HAVE Check Criteria:
 
-- No build error (docker compose build) `DONE`
+- No build error (docker compose build)
 - docker compose up successfully starts containers `DONE`
-- GET http://localhost/api/v1/users returns a list of users `The fuck?`
-- GET http://localhost/ returns the functioning paperless-frontend `DONE`
+-POST http://localhost/... some PDF-Document will lead to a log-entry at the worker-service (for to be processed with OCR)
 
-# !! Deadline 02.10.2025 !!
+# !! Deadline TBD !!
