@@ -1,5 +1,5 @@
 # ===== 1) Build stage =====
-FROM maven:3.9.9-eclipse-temurin-17 AS builder
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
 # Copy Maven files and pre-download dependencies
@@ -11,7 +11,7 @@ COPY src ./src
 RUN mvn -q -DskipTests package
 
 # ===== 2) Runtime stage =====
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Copy the fat jar (adjust JAR name if artifactId/version differs)
