@@ -14,6 +14,10 @@
 
 - `http://localhost:4200/`
 
+## Connecting to rabbitMQ
+
+- `http://localhost:15672/ (admin/admin)`
+
 ## STARTING THE TESTS
 
 - `mvn test`
