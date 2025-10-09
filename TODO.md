@@ -15,6 +15,7 @@
 
 - No build error (docker compose build) `DONE`
 - docker compose up successfully starts containers `DONE`
-- POST http://localhost/... some PDF-Document will lead to a log-entry at the worker-service (for to be processed with OCR)
+- POST http://localhost/... some PDF-Document will lead to a log-entry at the worker-service (for to be processed with OCR) `DONE`
 
-# !! Deadline TBD !!
+
+# !! Deadline 13.10.2025 23:59 !!
