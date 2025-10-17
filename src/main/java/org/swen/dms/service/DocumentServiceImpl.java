@@ -1,6 +1,9 @@
 package org.swen.dms.service;
 
+import io.minio.MinioClient;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import org.swen.dms.entity.Document;
 import org.swen.dms.exception.NotFoundException;
 import org.swen.dms.messaging.DocumentEventPublisher;
@@ -30,11 +33,13 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentRepository repo;
     private final DocumentEventPublisher publisher;
+    private final MinioClient minioClient;
 
-    public DocumentServiceImpl(DocumentRepository repo, DocumentEventPublisher publisher) {
+    public DocumentServiceImpl(DocumentRepository repo, DocumentEventPublisher publisher, MinioClient minioClient) {
 
         this.repo = repo;
         this.publisher = publisher;
+        this.minioClient = minioClient;
     }
 
     @Override
@@ -51,6 +56,21 @@ public class DocumentServiceImpl implements DocumentService {
         } catch (DataAccessException dae) {
             throw new PersistenceException("Failed to save document to database", dae);
         }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> uploadDocuments(MultipartFile file) {
+        minioClient.putObject(PutObjectArgs
+                .builder()
+                .bucket("user1")
+                .object("Resume.pdf")
+                .stream(
+                        new
+
+                                FileInputStream
+                                ("/tmp/Resume.pdf")
+                                .build());
     }
 
     @Override
