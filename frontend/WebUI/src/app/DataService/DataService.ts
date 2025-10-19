@@ -10,7 +10,6 @@ import { firstValueFrom, Observable } from 'rxjs';
 export interface DocumentDto {
   id?: number;
   title: string;
-  content: string;
 }
 
 /**
@@ -39,15 +38,6 @@ export class DataService {
   getDocuments(): Observable<DocumentDto[]> {
     return this.http.get<DocumentDto[]>(this.baseUrl);
   }
-
-  /**
-   * POST /api/documents
-   * Create a new document. Returns a Promise for convenient async/await usage.
-   */
-  createDocument(doc: DocumentDto): Promise<DocumentDto> {
-    return firstValueFrom(this.http.post<DocumentDto>(this.baseUrl, doc));
-  }
-
   /**
    * PUT /api/documents/{id}
    * Update an existing document by id. Returns the updated entity.
@@ -55,6 +45,16 @@ export class DataService {
   updateDocument(id: number, doc: DocumentDto): Promise<DocumentDto> {
     return firstValueFrom(this.http.put<DocumentDto>(`${this.baseUrl}/${id}`, doc));
   }
+
+  //download doc
+  downloadDocument(id: number): Promise<Blob> {
+    return firstValueFrom(
+      this.http.get(`${this.baseUrl}/${id}/download`, {
+        responseType: 'blob'
+      })
+    );
+  }
+
 
   /**
    * DELETE /api/documents/{id}

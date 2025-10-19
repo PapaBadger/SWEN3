@@ -26,6 +26,18 @@ public class Document {
     @Column(nullable = false, updatable = false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
+    //just to test things constructors
+    public Document() {
+    }
+
+    public Document(Long id, String title, String fileKey, String contentType, Long fileSize, LocalDateTime uploadedAt) {
+        this.id = id;
+        this.title = title;
+        this.fileKey = fileKey;
+        this.contentType = contentType;
+        this.fileSize = fileSize;
+        this.uploadedAt = uploadedAt;
+    }
 
     //Gett und Setter
     public Long getId() { return id; }

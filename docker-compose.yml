@@ -40,7 +40,7 @@ services:
 
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin123
+      MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: dms-files
     ports:
       - "${APP_PORT}:8080"

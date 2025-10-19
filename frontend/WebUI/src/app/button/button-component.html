@@ -1,65 +1,62 @@
 <section>
 
+  <h2 style="margin:0 0 12px;">Manage documents</h2>
+  <p style="margin:0 0 24px;">Update, delete, metadata</p>
+
   <!-- GET -->
   <div class="panel">
     <h3>Get (GET)</h3>
-    <button class="full" mat-raised-button color="primary" (click)="onGet()">Get documents</button>
+    <button class="full" mat-raised-button color="primary" (click)="onGet()">Load documents</button>
   </div>
 
-  <!-- CREATE -->
+  <!-- UPLOAD -->
   <div class="panel">
-    <h3>Create (POST)</h3>
+    <h3>Upload PDF (POST)</h3>
+
+    <!-- Datei auswählen -->
+    <input type="file"
+           accept="application/pdf"
+           (change)="onFileSelected($event)"
+           class="full"/>
+
+    <!-- Optional: Titel -->
     <mat-form-field class="full" appearance="outline">
-      <mat-label>Title</mat-label>
-      <input matInput [(ngModel)]="newTitle" name="newTitle">
+      <mat-label>Title (optional)</mat-label>
+      <input matInput [(ngModel)]="uploadTitle" name="uploadTitle">
     </mat-form-field>
 
-    <mat-form-field class="full" appearance="outline">
-      <mat-label>Content</mat-label>
-      <input matInput [(ngModel)]="newContent" name="newContent">
-    </mat-form-field>
-
-    <button class="full" mat-raised-button color="accent"
-            (click)="onCreate()" [disabled]="creating || !newTitle?.trim()">
-      {{ creating ? 'Creating…' : 'Create' }}
+    <!-- Upload-Button -->
+    <button class="full"
+            mat-raised-button
+            color="accent"
+            [disabled]="!selectedFile || uploading"
+            (click)="onUpload()">
+      {{ uploading ? 'Uploading…' : 'Upload PDF' }}
     </button>
+
+    <!-- Ergebnis -->
+    <div *ngIf="uploadResult" style="margin-top:8px;">
+      <strong>Result:</strong> {{ uploadResult }}
+    </div>
   </div>
 
-  <!-- UPDATE -->
+  <!-- UPDATE (Rename Title) -->
   <div class="panel">
-    <h3>Update (PUT)</h3>
+    <h3>Update title (PUT)</h3>
     <mat-form-field class="full" appearance="outline">
-      <mat-label>ID to update</mat-label>
+      <mat-label>Document ID</mat-label>
       <input matInput type="number" [(ngModel)]="updateId" name="updateId">
     </mat-form-field>
 
     <mat-form-field class="full" appearance="outline">
-      <mat-label>New title (optional)</mat-label>
+      <mat-label>New title</mat-label>
       <input matInput [(ngModel)]="updateTitle" name="updateTitle">
     </mat-form-field>
 
-    <mat-form-field class="full" appearance="outline">
-      <mat-label>New content (optional)</mat-label>
-      <input matInput [(ngModel)]="updateContent" name="updateContent">
-    </mat-form-field>
-
     <button class="full" mat-raised-button color="primary"
-            (click)="onUpdate()" [disabled]="updating || !updateId">
-      {{ updating ? 'Updating…' : 'Update' }}
-    </button>
-  </div>
-
-  <!-- DELETE -->
-  <div class="panel">
-    <h3>Delete (DELETE)</h3>
-    <mat-form-field class="full" appearance="outline">
-      <mat-label>ID to delete</mat-label>
-      <input matInput type="number" [(ngModel)]="deleteId" name="deleteId">
-    </mat-form-field>
-
-    <button class="full" mat-raised-button color="warn"
-            (click)="onDelete()" [disabled]="deleting || !deleteId">
-      {{ deleting ? 'Deleting…' : 'Delete' }}
+            (click)="onUpdate()"
+            [disabled]="updating || !updateId || !updateTitle?.trim()">
+      {{ updating ? 'Updating…' : 'Rename' }}
     </button>
   </div>
 
@@ -68,8 +65,61 @@
   <!-- Results -->
   <div *ngIf="documents?.length" class="panel">
     <h3>Documents</h3>
-    <div *ngFor="let d of documents" class="row">
-      <strong>#{{ d.id }}</strong> — {{ d.title }} — {{ d.content }}
-    </div>
+
+    <table mat-table [dataSource]="documents" class="mat-elevation-z1 full">
+
+      <!-- ID -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let d">#{{ d.id }}</td>
+      </ng-container>
+
+      <!-- Title -->
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>Title</th>
+        <td mat-cell *matCellDef="let d">{{ d.title }}</td>
+      </ng-container>
+
+      <!-- contentType -->
+      <ng-container matColumnDef="contentType">
+        <th mat-header-cell *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let d">{{ d.contentType }}</td>
+      </ng-container>
+
+      <!-- fileSize -->
+      <ng-container matColumnDef="fileSize">
+        <th mat-header-cell *matHeaderCellDef>Size</th>
+        <td mat-cell *matCellDef="let d">{{ d.fileSize | number }} bytes</td>
+      </ng-container>
+
+      <!-- uploadedAt -->
+      <ng-container matColumnDef="uploadedAt">
+        <th mat-header-cell *matHeaderCellDef>Uploaded</th>
+        <td mat-cell *matCellDef="let d">{{ d.uploadedAt | date:'medium' }}</td>
+      </ng-container>
+
+      <!-- Actions -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="actions">Actions</th>
+        <td mat-cell *matCellDef="let d" class="actions">
+          <button mat-icon-button (click)="onDownload(d.id)" matTooltip="Download">
+            <mat-icon>download</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="onDeleteByID(d.id)" matTooltip="Delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+
+      <tr mat-header-row *matHeaderRowDef="['id','title','contentType','fileSize','uploadedAt','actions']"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['id','title','contentType','fileSize','uploadedAt','actions'];"></tr>
+
+    </table>
   </div>
+
+  <div *ngIf="documents && !documents.length" class="panel">
+    <em>No documents found.</em>
+  </div>
+
 </section>

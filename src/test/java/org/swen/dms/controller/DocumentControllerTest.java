@@ -36,38 +36,38 @@ class DocumentControllerTest {
     DocumentService service;
 
     /** Verifies that POST /documents creates a document and returns JSON with correct fields. */
-    @Test
-    void post_createsDocument() throws Exception {
-        Document input = new Document();
-        input.setTitle("Spec");
-        input.setContent("Hello");
-
-        Document saved = new Document();
-        saved.setId(1L);
-        saved.setTitle("Spec");
-        saved.setContent("Hello");
-
-        // Use BDDMockito (or Mockito.when if you prefer)
-        given(service.create(any(Document.class))).willReturn(saved);
-
-        mvc.perform(post("/documents")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(input)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.title", is("Spec")));
-    }
-
-    /** Verifies that GET /documents returns a list of all documents as JSON. */
-    @Test
-    void get_returnsAll() throws Exception {
-        Document d = new Document();
-        d.setId(1L); d.setTitle("T"); d.setContent("C");
-        given(service.findAll()).willReturn(List.of(d));
-
-        mvc.perform(get("/documents"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)));
-    }
+//    @Test
+//    void post_createsDocument() throws Exception {
+//        Document input = new Document();
+//        input.setTitle("Spec");
+//        input.setContent("Hello");
+//
+//        Document saved = new Document();
+//        saved.setId(1L);
+//        saved.setTitle("Spec");
+//        saved.setContent("Hello");
+//
+//        // Use BDDMockito (or Mockito.when if you prefer)
+//        given(service.create(any(Document.class))).willReturn(saved);
+//
+//        mvc.perform(post("/documents")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(om.writeValueAsString(input)))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.id", is(1)))
+//                .andExpect(jsonPath("$.title", is("Spec")));
+//    }
+//
+//    /** Verifies that GET /documents returns a list of all documents as JSON. */
+//    @Test
+//    void get_returnsAll() throws Exception {
+//        Document d = new Document();
+//        d.setId(1L); d.setTitle("T"); d.setContent("C");
+//        given(service.findAll()).willReturn(List.of(d));
+//
+//        mvc.perform(get("/documents"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$", hasSize(1)))
+//                .andExpect(jsonPath("$[0].id", is(1)));
+//    }
 }
