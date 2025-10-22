@@ -65,21 +65,21 @@ public class DocumentServiceImpl implements DocumentService {
 //        repo.save(testDoc);
     }
 
-    @Override
-    @Transactional
-    public Document create(Document doc) {
-
-        try{
-            Document saved = repo.save(doc);
-            //publish event (don't block request if it fails)
-            publisher.publishDocumentCreated(
-                    new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now())
-            );
-            return saved;
-        } catch (DataAccessException dae) {
-            throw new PersistenceException("Failed to save document to database", dae);
-        }
-    }
+//    @Override
+//    @Transactional
+//    public Document create(Document doc) {
+//
+//        try{
+//            Document saved = repo.save(doc);
+//            //publish event (don't block request if it fails)
+//            publisher.publishDocumentCreated(
+//                    new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now(), "documents", saved.getFileKey())
+//            );
+//            return saved;
+//        } catch (DataAccessException dae) {
+//            throw new PersistenceException("Failed to save document to database", dae);
+//        }
+//    }
 
     @Override
     @Transactional
@@ -95,7 +95,7 @@ public class DocumentServiceImpl implements DocumentService {
 
             //no collisions in names
             int count = 1;
-            while (existsByTitle(documentTitle)) {
+            while (existsByTitle(documentTitle + ".pdf")) {
                 documentTitle = documentTitle + " (" + count++ + ")";
             }
 
@@ -124,7 +124,7 @@ public class DocumentServiceImpl implements DocumentService {
                 Document saved = repo.save(doc);
 
                 publisher.publishDocumentCreated(
-                        new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now())
+                        new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now(), "documents", saved.getFileKey())
                 );
 
                 return ResponseEntity.ok(saved);

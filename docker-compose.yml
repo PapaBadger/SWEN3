@@ -42,6 +42,13 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: dms-files
+
+      OCR_LANG: deu+eng
+      OCR_PSM: "3"
+      OCR_OEM: "1"
+      OCR_DPI: "300"
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
+
     ports:
       - "${APP_PORT}:8080"
     healthcheck:

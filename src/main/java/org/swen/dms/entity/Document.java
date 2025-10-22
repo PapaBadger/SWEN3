@@ -26,6 +26,10 @@ public class Document {
     @Column(nullable = false, updatable = false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String ocrText;
+
     //just to test things constructors
     public Document() {
     }
@@ -57,4 +61,7 @@ public class Document {
 
     public LocalDateTime getUploadedAt() { return uploadedAt; }
     public void setUploadedAt(LocalDateTime uploadedAt) { this.uploadedAt = uploadedAt; }
+
+    public String getOcrText() { return ocrText; }
+    public void setOcrText(String ocrText) { this.ocrText = ocrText; }
 }

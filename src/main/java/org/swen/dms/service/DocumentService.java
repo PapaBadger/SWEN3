@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 public interface DocumentService {
-    Document create(Document doc);
+    //Document create(Document doc);
     List<Document> findAll();
     Document findById(Long id);
     Document update(Long id, Document update);
