@@ -18,6 +18,10 @@
 
 - `http://localhost:15672/ (admin/admin)`
 
+## Connecting to minIO
+
+- `http://localhost:9000/ (minioadmin/minioadmin)`
+
 ## STARTING THE TESTS
 
 - `mvn test`

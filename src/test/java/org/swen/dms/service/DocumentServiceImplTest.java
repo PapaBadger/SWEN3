@@ -2,67 +2,148 @@ package org.swen.dms.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import org.swen.dms.entity.Document;
 import org.swen.dms.exception.NotFoundException;
+import org.swen.dms.messaging.DocumentCreatedEvent;
+import org.swen.dms.messaging.DocumentEventPublisher;
+import org.swen.dms.messaging.DocumentUpdatedEvent;
 import org.swen.dms.repository.DocumentRepository;
 
+import io.minio.MinioClient;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link org.swen.dms.service.DocumentServiceImpl}.
  * <p>
- * Uses Mockito to mock {@link org.swen.dms.repository.DocumentRepository}.
- * Ensures business logic is correct without touching the database.
+ * Uses Mockito to mock dependencies and ensures business logic
+ * is correct without touching external systems.
  */
-
 @ExtendWith(MockitoExtension.class)
 class DocumentServiceImplTest {
 
     @Mock
     private DocumentRepository repo;
 
+    @Mock
+    private DocumentEventPublisher publisher;
+
+    @Mock
+    private MinioClient minioClient;
+
     @InjectMocks
     private DocumentServiceImpl service;
 
-//    /** Verifies that creating a document delegates to repo.save() and returns the saved entity. */
-//    @Test
-//    void create_savesAndReturnsEntity() {
-//        Document input = new Document();
-//        input.setTitle("Spec");
-//        input.setContent("Hello");
-//
-//        Document saved = new Document();
-//        saved.setId(1L);
-//        saved.setTitle("Spec");
-//        saved.setContent("Hello");
-//
-//        when(repo.save(input)).thenReturn(saved);
-//
-//        Document result = service.create(input);
-//
-//        assertThat(result.getId()).isEqualTo(1L);
-//        verify(repo).save(input);
-//    }
+    private Document createTestDocument(Long id) {
+        Document doc = new Document();
+        doc.setId(id);
+        doc.setTitle("Test Document " + id);
+        doc.setFileKey("file-key-" + id);
+        doc.setContentType("application/pdf");
+        doc.setFileSize(1024L);
+        doc.setUploadedAt(LocalDateTime.now());
+        return doc;
+    }
 
     /**
-     * Verifies that findById returns the entity when it exists.
+     * Verifies that uploadDocument successfully saves a document to MinIO and database,
+     * and publishes a DocumentCreatedEvent.
+     */
+    @Test
+    void uploadDocument_Success() throws Exception {
+        MultipartFile file = new MockMultipartFile(
+                "test.pdf", "test.pdf", "application/pdf", "content".getBytes()
+        );
+        Document savedDoc = createTestDocument(1L);
+
+        when(repo.save(any(Document.class))).thenReturn(savedDoc);
+
+        ResponseEntity<?> result = service.uploadDocument(file, "Test Document");
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        verify(repo).save(any(Document.class));
+
+        ArgumentCaptor<DocumentCreatedEvent> eventCaptor =
+                ArgumentCaptor.forClass(DocumentCreatedEvent.class);
+        verify(publisher).publishDocumentCreated(eventCaptor.capture());
+
+        DocumentCreatedEvent capturedEvent = eventCaptor.getValue();
+        assertThat(capturedEvent.getId()).isEqualTo(1L);
+    }
+
+    /**
+     * Verifies that uploadDocument returns 400 Bad Request when an empty file is provided.
+     */
+    @Test
+    void uploadDocument_EmptyFile() {
+        MultipartFile file = new MockMultipartFile(
+                "empty.pdf", "empty.pdf", "application/pdf", new byte[0]
+        );
+
+        ResponseEntity<?> result = service.uploadDocument(file, "Test Document");
+
+        assertThat(result.getStatusCode().is4xxClientError()).isTrue();
+    }
+
+    /**
+     * Verifies that uploadDocument returns 400 Bad Request
+     * when a non-PDF file is uploaded.
+     */
+    @Test
+    void uploadDocument_InvalidContentType() {
+        MultipartFile file = new MockMultipartFile(
+                "test.txt", "test.txt", "text/plain", "content".getBytes()
+        );
+
+        ResponseEntity<?> result = service.uploadDocument(file, "Test Document");
+
+        assertThat(result.getStatusCode().is4xxClientError()).isTrue();
+        assertThat(result.getBody()).asString().contains("Only PDFs allowed");
+    }
+
+    /**
+     * Verifies that findAll returns all documents from the repository.
+     */
+    @Test
+    void findAll_Success() {
+        List<Document> documents = List.of(
+                createTestDocument(1L),
+                createTestDocument(2L)
+        );
+        when(repo.findAll()).thenReturn(documents);
+
+        List<Document> result = service.findAll();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(1).getId()).isEqualTo(2L);
+    }
+
+    /**
+     * Verifies that findById returns the document when it exists.
      */
     @Test
     void findById_returnsEntity() {
-        Document d = new Document();
-        d.setId(42L);
-        when(repo.findById(42L)).thenReturn(Optional.of(d));
+        Document doc = createTestDocument(1L);
+        when(repo.findById(1L)).thenReturn(Optional.of(doc));
 
-        Document result = service.findById(42L);
+        Document result = service.findById(1L);
 
-        assertThat(result.getId()).isEqualTo(42L);
-        verify(repo).findById(42L);
+        assertThat(result.getId()).isEqualTo(1L);
+        verify(repo).findById(1L);
     }
 
     /**
@@ -71,43 +152,56 @@ class DocumentServiceImplTest {
     @Test
     void findById_throwsNotFound() {
         when(repo.findById(99L)).thenReturn(Optional.empty());
+
         assertThatThrownBy(() -> service.findById(99L))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("99");
     }
 
-    /** Verifies that update changes fields and persists the updated entity. */
-//    @Test
-//    void update_appliesChanges() {
-//        Document existing = new Document();
-//        existing.setId(5L);
-//        existing.setTitle("Old");
-//        existing.setContent("OldC");
-//
-//        when(repo.findById(5L)).thenReturn(Optional.of(existing));
-//        when(repo.save(any(Document.class))).thenAnswer(inv -> inv.getArgument(0));
-//
-//        Document patch = new Document();
-//        patch.setTitle("New");
-//        patch.setContent("NewC");
-//
-//        Document updated = service.update(5L, patch);
-//
-//        assertThat(updated.getTitle()).isEqualTo("New");
-//        assertThat(updated.getContent()).isEqualTo("NewC");
-//        verify(repo).save(existing);
-//    }
+    /**
+     * Verifies that update changes the document title and publishes a DocumentUpdatedEvent.
+     */
+    @Test
+    void update_Success() {
+        Document existing = createTestDocument(1L);
+        String originalTitle = existing.getTitle(); // Capture original title
+
+        Document update = new Document();
+        update.setTitle("Updated Title");
+
+        when(repo.findById(1L)).thenReturn(Optional.of(existing));
+
+        // Mock save to return the document with updated title
+        when(repo.save(any(Document.class))).thenAnswer(invocation -> {
+            Document doc = invocation.getArgument(0);
+            return doc; // Return the document that was passed to save
+        });
+
+        Document result = service.update(1L, update);
+
+        assertThat(result.getTitle()).isEqualTo("Updated Title");
+
+        ArgumentCaptor<DocumentUpdatedEvent> eventCaptor =
+                ArgumentCaptor.forClass(DocumentUpdatedEvent.class);
+        verify(publisher).publishDocumentUpdated(eventCaptor.capture());
+
+        DocumentUpdatedEvent capturedEvent = eventCaptor.getValue();
+        assertThat(capturedEvent.getId()).isEqualTo(1L);
+        assertThat(capturedEvent.getTitleBefore()).isEqualTo(originalTitle);
+        assertThat(capturedEvent.getTitleAfter()).isEqualTo("Updated Title");
+    }
 
     /**
      * Verifies that delete removes an entity if it exists.
      */
     @Test
     void delete_existing_deletes() {
-        when(repo.existsById(7L)).thenReturn(true);
+        Document doc = createTestDocument(1L);
+        when(repo.findById(1L)).thenReturn(Optional.of(doc));
 
-        service.delete(7L);
+        service.delete(1L);
 
-        verify(repo).deleteById(7L);
+        verify(repo).deleteById(1L);
     }
 
     /**
@@ -115,18 +209,23 @@ class DocumentServiceImplTest {
      */
     @Test
     void delete_missing_throws() {
-        when(repo.existsById(8L)).thenReturn(false);
+        when(repo.findById(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.delete(8L))
+        assertThatThrownBy(() -> service.delete(1L))
                 .isInstanceOf(NotFoundException.class);
         verify(repo, never()).deleteById(anyLong());
     }
 
-//    /** Verifies that findByTitle delegates to the repository method. */
-//    @Test
-//    void findByTitle_delegates() {
-//        when(repo.findByTitle("Spec")).thenReturn(List.of(new Document()));
-//        assertThat(service.findByTitle("Spec")).hasSize(1);
-//        verify(repo).findByTitle("Spec");
-//    }
+    /**
+     * Verifies that existsByTitle delegates to the repository method.
+     */
+    @Test
+    void existsByTitle_delegates() {
+        when(repo.existsByTitle("Test Document")).thenReturn(true);
+
+        boolean result = service.existsByTitle("Test Document");
+
+        assertThat(result).isTrue();
+        verify(repo).existsByTitle("Test Document");
+    }
 }

@@ -172,7 +172,8 @@ public class DocumentServiceImpl implements DocumentService {
         existing.setTitle(update.getTitle());
         //publishing
         publisher.publishDocumentUpdated(
-                new DocumentUpdatedEvent(update.getId(), titleBefore, update.getTitle(), Instant.now() )
+                new DocumentUpdatedEvent(id, titleBefore, update.getTitle(), Instant.now() )
+                // Changed from update.getId() to id
         );
         return repo.save(existing);
     }
