@@ -62,24 +62,7 @@ public class DocumentServiceImpl implements DocumentService {
         this.repo = repo;
         this.publisher = publisher;
         this.minioClient = minioClient;
-//        repo.save(testDoc);
     }
-
-//    @Override
-//    @Transactional
-//    public Document create(Document doc) {
-//
-//        try{
-//            Document saved = repo.save(doc);
-//            //publish event (don't block request if it fails)
-//            publisher.publishDocumentCreated(
-//                    new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now(), "documents", saved.getFileKey())
-//            );
-//            return saved;
-//        } catch (DataAccessException dae) {
-//            throw new PersistenceException("Failed to save document to database", dae);
-//        }
-//    }
 
     @Override
     @Transactional
