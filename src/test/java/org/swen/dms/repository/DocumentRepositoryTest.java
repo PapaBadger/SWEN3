@@ -39,6 +39,9 @@ class DocumentRepositoryTest {
         return entityManager.persistAndFlush(doc);
     }
 
+    /**
+     * Verifies that findByTitle returns all documents with the matching title.
+     */
     @Test
     void findByTitle_ShouldReturnMatchingDocuments() {
         // Arrange
@@ -55,6 +58,9 @@ class DocumentRepositoryTest {
                 .containsExactlyInAnyOrder(doc1.getId(), doc3.getId()); // Changed from doc2 to doc3
     }
 
+    /**
+     * Verifies that findByTitle returns an empty list when no documents match the title.
+     */
     @Test
     void findByTitle_NoMatches_ShouldReturnEmptyList() {
         // Arrange
@@ -67,6 +73,9 @@ class DocumentRepositoryTest {
         assertThat(found).isEmpty();
     }
 
+    /**
+     * Verifies that existsByTitle returns true when a document with the given title exists.
+     */
     @Test
     void existsByTitle_ShouldReturnTrueWhenExists() {
         // Arrange
@@ -79,6 +88,9 @@ class DocumentRepositoryTest {
         assertThat(exists).isTrue();
     }
 
+    /**
+     * Verifies that existsByTitle returns false when no document with the given title exists.
+     */
     @Test
     void existsByTitle_ShouldReturnFalseWhenNotExists() {
         // Act
@@ -88,6 +100,9 @@ class DocumentRepositoryTest {
         assertThat(exists).isFalse();
     }
 
+    /**
+     * Verifies that documents can be saved and retrieved by ID.
+     */
     @Test
     void saveAndFindById_ShouldWork() {
         // Arrange
@@ -102,6 +117,9 @@ class DocumentRepositoryTest {
         assertThat(found.get().getFileKey()).isEqualTo("key1");
     }
 
+    /**
+     * Verifies that findAll returns all documents in the repository.
+     */
     @Test
     void findAll_ShouldReturnAllDocuments() {
         // Arrange
@@ -115,6 +133,9 @@ class DocumentRepositoryTest {
         assertThat(all).hasSize(2);
     }
 
+    /**
+     * Verifies that deleteById removes a document from the repository.
+     */
     @Test
     void delete_ShouldRemoveDocument() {
         // Arrange

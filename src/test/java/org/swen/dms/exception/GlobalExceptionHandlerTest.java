@@ -16,6 +16,10 @@ class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
+    /**
+     * Verifies that handlePersistence correctly handles PersistenceException
+     * by returning a 500 INTERNAL_SERVER_ERROR response with proper error details.
+     */
     @Test
     void handlePersistenceException() {
         // Arrange
@@ -30,6 +34,10 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().get("code")).isEqualTo("PERSISTENCE_ERROR");
     }
 
+    /**
+     * Verifies that handleMessaging correctly handles MessagingException
+     * by returning a 502 BAD_GATEWAY response with appropriate error details.
+     */
     @Test
     void handleMessagingException() {
         // Arrange
@@ -44,6 +52,10 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().get("code")).isEqualTo("MESSAGING_ERROR");
     }
 
+    /**
+     * Verifies that handleGeneric acts as a catch-all handler for any unexpected
+     * exceptions by returning a 500 INTERNAL_SERVER_ERROR response.
+     */
     @Test
     void handleGenericException() {
         // Arrange
