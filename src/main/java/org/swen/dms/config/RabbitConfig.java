@@ -23,10 +23,10 @@ import org.springframework.context.annotation.Configuration;
 @EnableRabbit
 @Configuration
 public class RabbitConfig {
-    // Names (keep them as constants for reuse)
     public static final String EXCHANGE_DOCS = "docs.exchange";
     public static final String ROUTING_DOC_CREATED = "docs.created";
     public static final String QUEUE_OCR = "docs.ocr.queue";
+    public static final String ROUTING_DOC_UPDATED = "docs.updated";
 
     @Bean
     public TopicExchange docsExchange() {

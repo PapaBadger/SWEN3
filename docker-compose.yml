@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: dms
+      POSTGRES_USER: dms_admin
+      POSTGRES_PASSWORD: dmsIsVeryCool123
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U dms_admin -d dms"]
       interval: 5s
       retries: 5
       start_period: 10s
@@ -26,16 +26,31 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
+      minio:
+        condition: service_started
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
+      SPRING_DATASOURCE_USERNAME: dms_admin
+      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
+
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: admin
       SPRING_RABBITMQ_PASSWORD: admin
+
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: dms-files
+
+      OCR_LANG: deu+eng
+      OCR_PSM: "3"
+      OCR_OEM: "1"
+      OCR_DPI: "300"
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
+
     ports:
-      - "${APP_PORT}:8080"
+      - "8080:8080"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
       interval: 10s
@@ -47,8 +62,8 @@ services:
   rabbitmq:
     image: rabbitmq:3.13-management
     ports:
-      - "5672:5672"    # AMQP
-      - "15672:15672"  # Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -62,10 +77,30 @@ services:
   frontend:
     build: ./frontend/WebUI
     ports:
-      - "${WEB_PORT}:80"
+      - "4200:80"
     depends_on:
       - app
     restart: unless-stopped
 
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  minio_data:

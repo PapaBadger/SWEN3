@@ -1,13 +1,7 @@
 package org.swen.dms.entity;
 
 import jakarta.persistence.*;
-
-/**
- * Entity class representing a document in the system.
- * <p>
- * Each instance maps to a row in the {@code document} table in PostgreSQL.
- * Fields correspond to columns and are persisted automatically by JPA/Hibernate.
- */
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "documents")
@@ -20,31 +14,54 @@ public class Document {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "text")
-    private String content;
+    @Column(nullable = false, unique = true)
+    private String fileKey;
 
+    @Column(nullable = false)
+    private String contentType;
 
-    public Long getId() {
-        return id;
+    @Column
+    private Long fileSize;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime uploadedAt = LocalDateTime.now();
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String ocrText;
+
+    //just to test things constructors
+    public Document() {
     }
 
-    public void setId(Long id) {
+    public Document(Long id, String title, String fileKey, String contentType, Long fileSize, LocalDateTime uploadedAt) {
         this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
         this.title = title;
+        this.fileKey = fileKey;
+        this.contentType = contentType;
+        this.fileSize = fileSize;
+        this.uploadedAt = uploadedAt;
     }
 
-    public String getContent() {
-        return content;
-    }
+    //Gett und Setter
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getFileKey() { return fileKey; }
+    public void setFileKey(String fileKey) { this.fileKey = fileKey; }
+
+    public String getContentType() { return contentType; }
+    public void setContentType(String contentType) { this.contentType = contentType; }
+
+    public Long getFileSize() { return fileSize; }
+    public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
+
+    public LocalDateTime getUploadedAt() { return uploadedAt; }
+    public void setUploadedAt(LocalDateTime uploadedAt) { this.uploadedAt = uploadedAt; }
+
+    public String getOcrText() { return ocrText; }
+    public void setOcrText(String ocrText) { this.ocrText = ocrText; }
 }

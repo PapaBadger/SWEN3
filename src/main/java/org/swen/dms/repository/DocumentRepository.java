@@ -15,4 +15,5 @@ import java.util.List;
 
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findByTitle(String title); // Spring auto-implements this
+    boolean existsByTitle(String title);
 }

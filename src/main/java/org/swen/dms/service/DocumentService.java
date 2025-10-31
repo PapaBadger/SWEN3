@@ -1,5 +1,8 @@
 package org.swen.dms.service;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import org.swen.dms.entity.Document;
 
 import java.util.List;
@@ -12,12 +15,12 @@ import java.util.List;
  */
 
 public interface DocumentService {
-    Document create(Document doc);
+    //Document create(Document doc);
     List<Document> findAll();
     Document findById(Long id);
     Document update(Long id, Document update);
     void delete(Long id);
-
-    // optional example query
-    List<Document> findByTitle(String title);
+    ResponseEntity<?> uploadDocument(MultipartFile file, String documentTitle);
+    boolean existsByTitle(String title);
+    ResponseEntity<byte[]> downloadDocument(Long id);
 }

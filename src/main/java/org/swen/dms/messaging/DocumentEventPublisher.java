@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
-import static org.swen.dms.config.RabbitConfig.EXCHANGE_DOCS;
-import static org.swen.dms.config.RabbitConfig.ROUTING_DOC_CREATED;
+import static org.swen.dms.config.RabbitConfig.*;
 
 /**
  * Publishes domain events related to documents to RabbitMQ.
@@ -33,6 +32,17 @@ public class DocumentEventPublisher {
         } catch (Exception ex) {
             log.error("Failed to publish DocumentCreatedEvent for id={}: {}", event.getId(), ex.getMessage(), ex);
             // Decide: swallow or rethrow as custom MessagingException
+            throw new MessagingException("Unable to publish document event", ex);
+        }
+    }
+
+    public void publishDocumentUpdated(DocumentUpdatedEvent event) {
+        try {
+            rabbitTemplate.convertAndSend(EXCHANGE_DOCS, ROUTING_DOC_UPDATED, event);
+            log.info("Published DocumentUpdatedEvent: id={}, {} -> {}",
+                    event.getId(), event.getTitleBefore(), event.getTitleAfter());
+        } catch (Exception ex) {
+            log.error("Failed to publish DocumentUpdatedEvent for id={}: {}", event.getId(), ex.getMessage(), ex);
             throw new MessagingException("Unable to publish document event", ex);
         }
     }

@@ -9,6 +9,7 @@ import {MatDividerModule} from '@angular/material/divider';
 import {MatList} from '@angular/material/list';
 import {MatListItem} from '@angular/material/list';
 import {FormsModule} from '@angular/forms';
+import {MatTableModule} from '@angular/material/table';
 
 /**
  * ButtonOverviewExample (standalone component)
@@ -37,22 +38,17 @@ import {FormsModule} from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     MatDividerModule,
-    MatList,
-    MatListItem]
+    MatTableModule
+    ]
 })
 export class ButtonOverviewExample {
   /** Current list shown in the UI (filled by GET). */
   documents: DocumentDto[] = [];
-
-  /** Form state for POST (create). */
-  newTitle = '';
-  newContent = '';
-  creating = false;
+  id?: number;
 
   /** Form state for PUT (update). */
   updateId?: number;
   updateTitle = '';
-  updateContent = '';
   updating = false;
 
   /** Form state for DELETE. */
@@ -79,21 +75,6 @@ export class ButtonOverviewExample {
    * Create a new document (POST).
    * Uses async/await over a Promise for readability; refreshes the list on success.
    */
-  async onCreate() {
-    if (!this.newTitle.trim()) return;
-    this.creating = true;
-    try {
-      const created = await this.data.createDocument({ title: this.newTitle, content: this.newContent });
-      console.log('Created:', created);
-      this.newTitle = '';
-      this.newContent = '';
-      this.onGet(); // refresh list
-    } catch (e) {
-      console.error('POST failed:', e);
-    } finally {
-      this.creating = false;
-    }
-  }
 
   /**
    * Update an existing document (PUT).
@@ -104,12 +85,10 @@ export class ButtonOverviewExample {
     this.updating = true;
     try {
       const updated = await this.data.updateDocument(this.updateId, {
-        title: this.updateTitle,
-        content: this.updateContent
+        title: this.updateTitle
       });
       console.log('Updated:', updated);
       this.updateTitle = '';
-      this.updateContent = '';
       this.updateId = undefined;
       this.onGet();
     } catch (e) {
@@ -119,22 +98,71 @@ export class ButtonOverviewExample {
     }
   }
 
+  selectedFile?: File;
+  uploadTitle: string = '';
+  uploading = false;
+  uploadResult?: string;
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      this.selectedFile = file;
+    } else {
+      alert('only PDF files.');
+      this.selectedFile = undefined;
+    }
+  }
+
+  onUpload() {
+    if (!this.selectedFile) {
+      alert('no file selected!');
+      return;
+    }
+
+    this.uploading = true;
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+    formData.append('title', this.uploadTitle || this.selectedFile.name);
+
+    fetch('http://localhost:8080/api/documents/upload', {
+      method: 'POST',
+      body: formData
+    })
+      .then(async res => {
+        this.onGet()
+        const text = await res.text();
+        this.uploadResult = res.ok
+          ? 'upload successful: ' + text
+          : 'Error: ' + text;
+      })
+      .catch(err => {
+        this.uploadResult = 'upload failed: ' + err.message;
+      })
+      .finally(() => (this.uploading = false));
+  }
+
+  onDownload(id: number) {
+    this.data.downloadDocument(id)
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `document-${id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch(err => console.error('Download failed', err));
+  }
+
+
   /**
    * Delete a document by ID (DELETE).
    * Clears the input and refreshes the list on success.
    */
-  async onDelete() {
-    if (!this.deleteId || this.deleteId <= 0) return;
+  onDeleteByID(id: number) {
     this.deleting = true;
-    try {
-      await this.data.deleteDocument(this.deleteId);
-      console.log('Deleted', this.deleteId);
-      this.deleteId = undefined;
-      this.onGet();
-    } catch (e) {
-      console.error('DELETE failed:', e);
-    } finally {
-      this.deleting = false;
-    }
+    this.data.deleteDocument(id)
+      .then(() => this.onGet()) // refresh list
+      .finally(() => this.deleting = false);
   }
 }
