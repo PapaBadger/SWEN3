@@ -2,14 +2,14 @@
 ## Queues Integration:
 
 1. Create an additional application for running the OCR service
-2. Tesseract for Ghostscript (or the like) integraded and working, show function with unit-tests.
+2. Tesseract for Ghostscript (or the like) integraded and working, show function with unit-tests. `DONE`
 3. Extend REST Server to store PDF document in MinIO `DONE`
-4. Implement the OCR-worker service to
+4. Implement the OCR-worker service to `DONE`
    retrieve messages from the queue (sent by REST-Server on document-upload),
    fetch the original PDF-document from MinIO
    perform the OCR-recognition
    show functionality with unit-tests
-5. Extend docker-compose.yml to run the MinIO and OCR-service in a container `DONE for MINIO`
+5. Extend docker-compose.yml to run the MinIO and OCR-service in a container `DONE`
 6. Make the frontend a little bit fancier :D
 
 

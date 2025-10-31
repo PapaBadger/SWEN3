@@ -188,7 +188,7 @@ public class DocumentServiceImpl implements DocumentService {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket("documents")
-                            .object(doc.getTitle())
+                            .object(doc.getFileKey())
                             .build()
             );
 
