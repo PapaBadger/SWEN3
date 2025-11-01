@@ -1,25 +1,23 @@
-# Features for Sprint 4
+# Features for Sprint 5
 ## Queues Integration:
 
-1. Create an additional application for running the OCR service
-2. Tesseract for Ghostscript (or the like) integraded and working, show function with unit-tests. `DONE`
-3. Extend REST Server to store PDF document in MinIO `DONE`
-4. Implement the OCR-worker service to `DONE`
-   retrieve messages from the queue (sent by REST-Server on document-upload),
-   fetch the original PDF-document from MinIO
-   perform the OCR-recognition
-   show functionality with unit-tests
-5. Extend docker-compose.yml to run the MinIO and OCR-service in a container `DONE`
-6. Make the frontend a little bit fancier :D
-
+1. Extend docker-compose.yml to include configuration for GenAI service
+2. Add a new GenAI-worker service
+3. On document upload, after OCR is complete:
+   Send the extracted text to a GenAI API (Google Gemini)
+   Receive a summary as a response
+4. Extend REST Server to store the summary in the database
+5. Logging in critical positions is integrated
+6. Exceptions and API failures are handled properly
+### MAKE FRONTEND FANCIER PLSS
 
 ## MUST-HAVE Check Criteria:
 
-- No build error (docker compose build)
-- docker compose up sucessfully starts all containers
-- POST http://localhost/... some PDF-Document
-  - will lead to store the PDF on MinIO
-  - will lead to a log-output on the PaperlessService.OcrWorker (stating OCR result)
+- No build error
+- docker compose up starts all required containers including PaperlessServices
+- POST http://localhost:8080/ … some PDF-Document
+- will lead to the summary generated with GenAI
+- will lead to summary stored in the database
 
 # !! Deadline 22.10.2025 23:59 !!
 
