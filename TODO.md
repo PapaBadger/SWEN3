@@ -10,8 +10,6 @@
 5. Logging in critical positions is integrated
 6. Exceptions and API failures are handled properly
 
-# GETOCRTEXT ZU GETSUMMARYTEXT ÄNDERN -> summary wird auf website angezeigt, ocr und summary text sollen beide in db gespeichert werden
-# alles im backend machen und dann durch frontend summary text holen
 ### MAKE FRONTEND FANCIER PLSS
 
 ## MUST-HAVE Check Criteria:
