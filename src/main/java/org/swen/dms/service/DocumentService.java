@@ -23,4 +23,5 @@ public interface DocumentService {
     ResponseEntity<?> uploadDocument(MultipartFile file, String documentTitle);
     boolean existsByTitle(String title);
     ResponseEntity<byte[]> downloadDocument(Long id);
+    String getOcrSummaryTextFromDB(long id);
 }

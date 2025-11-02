@@ -49,6 +49,9 @@ public class DocumentController {
         return service.downloadDocument(id);
     }
 
+    @GetMapping("/{id}/OcrSummaryText")
+    public String getOcrSummaryText(@PathVariable Long id) { return service.getOcrSummaryTextFromDB(id); }
+
 
     @PutMapping("/{id}")
     public Document update(@PathVariable Long id, @RequestBody Document update) {

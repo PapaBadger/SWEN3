@@ -37,6 +37,7 @@ public class OcrWorker {
     private final MinioClient minio;
     private final ITesseract tess;
     private final int dpi;
+    private final GenAIWorker genAIWorker;
 
     private final DocumentRepository repo;
 
@@ -44,6 +45,7 @@ public class OcrWorker {
                      @Value("${ocr.dpi:300}") int dpi, DocumentRepository repo) {
         this.minio = minio; this.tess = tess; this.dpi = dpi;
         this.repo = repo;
+        this.genAIWorker = new GenAIWorker();
     }
 
     @RabbitListener(queues = QUEUE_OCR)
@@ -63,6 +65,10 @@ public class OcrWorker {
             var doc = repo.findById(e.getId()).orElseThrow(() -> new RuntimeException("Document not found: " + e.getId()));
 
             doc.setOcrText(text);
+
+            //creating summary with genai and saving to db
+            doc.setOcrSummaryText(genAIWorker.summarize(text));
+
             repo.save(doc);
 
             log.info("OCR text saved for id={} ({} chars)", e.getId(), text.length());
@@ -70,6 +76,7 @@ public class OcrWorker {
             log.info("OCR done id={} ({} chars)", e.getId(), text.length());
 //            log.info("DOCUMENT TEXT: {}", text);
             log.info("DOCUMENT TEXT FROM DB: ={}", doc.getOcrText());
+            log.info("OCR SUMMARY------------------------- = {}", doc.getOcrSummaryText());
 
         } catch (Exception ex) {
             log.error("OCR failed id={}: {}", e.getId(), ex.getMessage(), ex);

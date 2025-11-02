@@ -150,6 +150,12 @@ public class DocumentServiceImpl implements DocumentService {
         return repo.existsByTitle(title);
     }
 
+    @Override
+    @Transactional
+    public String getOcrSummaryTextFromDB(long id) {
+        return repo.findById(id).get().getOcrSummaryText();
+    }
+
 
     @Override
     @Transactional(readOnly = true)

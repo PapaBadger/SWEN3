@@ -7,10 +7,16 @@ import { firstValueFrom, Observable } from 'rxjs';
  * Mirrors the Spring Boot `Document` entity fields used in the REST endpoints.
  */
 
+// DataService/DataService.ts
 export interface DocumentDto {
-  id?: number;
+  id: number;
   title: string;
+  contentType?: string;
+  fileSize?: number;
+  uploadedAt?: string;
+  ocrText?: string;
 }
+
 
 /**
  * DataService
@@ -42,8 +48,18 @@ export class DataService {
    * PUT /api/documents/{id}
    * Update an existing document by id. Returns the updated entity.
    */
-  updateDocument(id: number, doc: DocumentDto): Promise<DocumentDto> {
-    return firstValueFrom(this.http.put<DocumentDto>(`${this.baseUrl}/${id}`, doc));
+  updateDocument(id: number, patch: Partial<DocumentDto>): Promise<DocumentDto> {
+    return firstValueFrom(
+      this.http.put<DocumentDto>(`${this.baseUrl}/${id}`, patch)
+    );
+  }
+
+
+  // data.service.ts
+  getSummaryText(id: number) {
+    return this.http.get(`http://localhost:8080/api/documents/${id}/OcrSummaryText`, {
+      responseType: 'text',
+    });
   }
 
   //download doc

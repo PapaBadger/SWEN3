@@ -1,0 +1,38 @@
+@use '@angular/material' as mat;
+
+// LIGHT THEME
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$indigo-palette,
+    // M3 hat keine "accent/warn" mehr. Optional: tertiary statt accent.
+    tertiary: mat.$pink-palette,
+  ),
+  // optional:
+  // typography: mat.define-typography-config(),
+  // density: 0,
+));
+
+// DARK THEME
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$indigo-palette,
+    tertiary: mat.$pink-palette,
+  ),
+));
+
+// Basis
+@include mat.core();
+
+// Standard: Light auf :root
+:root {
+  @include mat.all-component-themes($light-theme);
+  @include mat.typography-hierarchy($light-theme);
+}
+
+// Toggle: Dark per CSS-Klasse
+.dark-theme {
+  @include mat.all-component-themes($dark-theme);
+  @include mat.typography-hierarchy($dark-theme);
+}

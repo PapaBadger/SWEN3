@@ -49,6 +49,10 @@ services:
       OCR_DPI: "300"
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
 
+      GENAI_PROVIDER: "google"
+      GENAI_MODEL: "gemini-2.0-flash"
+      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
+
     ports:
       - "8080:8080"
     healthcheck:
@@ -59,7 +63,7 @@ services:
       start_period: 20s
     restart: unless-stopped
 
-  ocr-worker:
+  ocrGenAI-worker:
     image: pat/swen-dms:latest
     depends_on:
       db:
@@ -91,6 +95,10 @@ services:
       OCR_OEM: "1"
       OCR_DPI: "300"
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
+
+      GENAI_PROVIDER: "google"
+      GENAI_MODEL: "gemini-2.0-flash"
+      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
 
     ports:
       - "8082:8082"

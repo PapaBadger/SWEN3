@@ -9,6 +9,9 @@
 4. Extend REST Server to store the summary in the database
 5. Logging in critical positions is integrated
 6. Exceptions and API failures are handled properly
+
+# GETOCRTEXT ZU GETSUMMARYTEXT ÄNDERN -> summary wird auf website angezeigt, ocr und summary text sollen beide in db gespeichert werden
+# alles im backend machen und dann durch frontend summary text holen
 ### MAKE FRONTEND FANCIER PLSS
 
 ## MUST-HAVE Check Criteria:
@@ -19,7 +22,4 @@
 - will lead to the summary generated with GenAI
 - will lead to summary stored in the database
 
-# !! Deadline 22.10.2025 23:59 !!
-
-# unbedingt test phase wieder hinzufügen in Dockerfile!!!
 # Unit tests schreiben!!!

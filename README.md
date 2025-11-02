@@ -10,6 +10,11 @@
 - To show all data -> command: `curl http://localhost:8080/api/documents`
 - Output something like this: `[{"id":1,"title":"Mein erstes Doc","content":"Hallo DB"}]`
 
+## WHEN CHANGING DB SCHEMA DO THE FOLLOWING:
+docker compose down -v (used for a clean reset, all data gets deleted too)
+
+docker compose up -d --build
+
 ## Connecting to localhost
 
 - `http://localhost:4200/`

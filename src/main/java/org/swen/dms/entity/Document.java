@@ -30,6 +30,10 @@ public class Document {
     @Column(columnDefinition = "TEXT")
     private String ocrText;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String ocrSummaryText;
+
     //just to test things constructors
     public Document() {
     }
@@ -64,4 +68,7 @@ public class Document {
 
     public String getOcrText() { return ocrText; }
     public void setOcrText(String ocrText) { this.ocrText = ocrText; }
+
+    public String getOcrSummaryText() { return ocrSummaryText; }
+    public void setOcrSummaryText(String ocrSummaryText) { this.ocrSummaryText = ocrSummaryText; }
 }
