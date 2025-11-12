@@ -104,7 +104,18 @@ if conflicts: edit files -> `git add` the fixed files -> `git rebase --continue`
 
 `git push origin --delete feature/<short-name>`       # delete remote
 
+## HOW TO CREATE TAGS
+(get the commit hash with: `git lol` or look it up on GitHub)
 
+`git tag -a <name of tag> <commit hash> -m "<description of tag>`
+
+### How to show all tags
+
+`git tag`
+
+### How to push your created tag
+
+`git push origin <tag name>`
 
 # REST SERVER & DATABASE USE
 

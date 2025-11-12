@@ -55,7 +55,6 @@ export class DataService {
   }
 
 
-  // data.service.ts
   getSummaryText(id: number) {
     return this.http.get(`http://localhost:8080/api/documents/${id}/OcrSummaryText`, {
       responseType: 'text',
