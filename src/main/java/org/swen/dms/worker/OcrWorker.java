@@ -9,9 +9,12 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.swen.dms.messaging.DocumentCreatedEvent;
+import org.swen.dms.messaging.OcrCompletedEvent;
 import org.swen.dms.repository.DocumentRepository;
 
 import java.awt.image.BufferedImage;
@@ -20,7 +23,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.swen.dms.config.RabbitConfig.QUEUE_OCR;
+import static org.swen.dms.config.RabbitConfig.*;
 
 /**
  * Simulated OCR worker service.
@@ -32,20 +35,21 @@ import static org.swen.dms.config.RabbitConfig.QUEUE_OCR;
  */
 
 @Component
+@Profile("ocrWorker")
 public class OcrWorker {
     private static final Logger log = LoggerFactory.getLogger(OcrWorker.class);
     private final MinioClient minio;
     private final ITesseract tess;
     private final int dpi;
-    private final GenAIWorker genAIWorker;
 
     private final DocumentRepository repo;
+    private final RabbitTemplate rabbitTemplate;
 
     public OcrWorker(MinioClient minio, ITesseract tess,
-                     @Value("${ocr.dpi:300}") int dpi, DocumentRepository repo) {
+                     @Value("${ocr.dpi:300}") int dpi, DocumentRepository repo, RabbitTemplate rabbitTemplate) {
         this.minio = minio; this.tess = tess; this.dpi = dpi;
         this.repo = repo;
-        this.genAIWorker = new GenAIWorker();
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @RabbitListener(queues = QUEUE_OCR)
@@ -66,10 +70,12 @@ public class OcrWorker {
 
             doc.setOcrText(text);
 
-            //creating summary with genai and saving to db
-            doc.setOcrSummaryText(genAIWorker.summarize(text));
-
             repo.save(doc);
+
+            //für genAI publishing
+            OcrCompletedEvent event = new OcrCompletedEvent(e.getId());
+
+            rabbitTemplate.convertAndSend(EXCHANGE_DOCS, ROUTING_OCR_COMPLETED, event);
 
             log.info("OCR text saved for id={} ({} chars)", e.getId(), text.length());
 

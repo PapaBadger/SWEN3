@@ -24,9 +24,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
     public static final String EXCHANGE_DOCS = "docs.exchange";
+
     public static final String ROUTING_DOC_CREATED = "docs.created";
-    public static final String QUEUE_OCR = "docs.ocr.queue";
     public static final String ROUTING_DOC_UPDATED = "docs.updated";
+    public static final String ROUTING_OCR_COMPLETED = "docs.ocr.completed";
+
+    public static final String QUEUE_OCR = "docs.ocr.queue";
+    public static final String QUEUE_GENAI = "docs.genai.queue";
 
     @Bean
     public TopicExchange docsExchange() {
@@ -43,6 +47,18 @@ public class RabbitConfig {
         return BindingBuilder.bind(ocrQueue())
                 .to(docsExchange())
                 .with(ROUTING_DOC_CREATED);
+    }
+
+    @Bean
+    public Queue genAIQueue() {
+        return QueueBuilder.durable(QUEUE_GENAI).build();
+    }
+
+    @Bean
+    public Binding bindGenAIQueue() {
+        return BindingBuilder.bind(genAIQueue())
+                .to(docsExchange())
+                .with(ROUTING_OCR_COMPLETED);
     }
 
     @Bean
