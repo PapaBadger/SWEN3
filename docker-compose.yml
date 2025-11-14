@@ -16,101 +16,6 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: pat/swen-dms:latest
-    depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-      minio:
-        condition: service_started
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
-      SPRING_DATASOURCE_USERNAME: dms_admin
-      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
-
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: admin
-
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET: dms-files
-
-      OCR_LANG: deu+eng
-      OCR_PSM: "3"
-      OCR_OEM: "1"
-      OCR_DPI: "300"
-      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
-
-      GENAI_PROVIDER: "google"
-      GENAI_MODEL: "gemini-2.0-flash"
-      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
-
-    ports:
-      - "8080:8080"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 20s
-    restart: unless-stopped
-
-  ocrGenAI-worker:
-    image: pat/swen-dms:latest
-    depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-      minio:
-        condition: service_started
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
-      SPRING_DATASOURCE_USERNAME: dms_admin
-      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
-
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: admin
-
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET: dms-files
-
-      SERVER_PORT: "8082"
-      SPRING_APPLICATION_NAME: ocr-worker
-
-      OCR_LANG: "deu+eng"
-      OCR_PSM: "3"
-      OCR_OEM: "1"
-      OCR_DPI: "300"
-      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
-
-      GENAI_PROVIDER: "google"
-      GENAI_MODEL: "gemini-2.0-flash"
-      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
-
-    ports:
-      - "8082:8082"
-    healthcheck:
-      test: [ "CMD", "wget", "-qO-", "http://localhost:8082/actuator/health" ]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 20s
-    restart: unless-stopped
-
-
   rabbitmq:
     image: rabbitmq:3.13-management
     ports:
@@ -124,14 +29,6 @@ services:
       interval: 5s
       retries: 5
       start_period: 10s
-    restart: unless-stopped
-
-  frontend:
-    build: ./frontend/WebUI
-    ports:
-      - "4200:80"
-    depends_on:
-      - app
     restart: unless-stopped
 
   minio:
@@ -151,6 +48,109 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  # === Backend ===
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pat/swen-dms:latest
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      minio:
+        condition: service_started
+    environment:
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
+      SPRING_DATASOURCE_USERNAME: dms_admin
+      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
+
+
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: admin
+      SPRING_RABBITMQ_PASSWORD: admin
+
+
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: dms-files
+
+
+      OCR_LANG: deu+eng
+      OCR_PSM: "3"
+      OCR_OEM: "1"
+      OCR_DPI: "300"
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
+
+
+      GENAI_PROVIDER: "google"
+      GENAI_MODEL: "gemini-2.0-flash"
+      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
+
+
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  worker-service:
+    image: pat/swen-dms:latest
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      minio:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: "ocrWorker,genAIWorker"
+
+      SERVER_PORT: 8082
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
+      SPRING_DATASOURCE_USERNAME: dms_admin
+      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
+
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: admin
+      SPRING_RABBITMQ_PASSWORD: admin
+
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: dms-files
+
+      OCR_LANG: "deu+eng"
+      OCR_PSM: "3"
+      OCR_OEM: "1"
+      OCR_DPI: "300"
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
+
+      GENAI_PROVIDER: "google"
+      GENAI_MODEL: "gemini-2.0-flash"
+      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend/WebUI
+    ports:
+      - "4200:80"
+    depends_on:
+      - app
     restart: unless-stopped
 
 volumes:

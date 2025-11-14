@@ -21,3 +21,6 @@
 - will lead to summary stored in the database
 
 # Unit tests schreiben!!!
+
+
+# Rabbit MQ soll mit OCR UND GENAI worker kommunizieren, also mit publisher, damit alles seperat und auf eingenen port läuft
