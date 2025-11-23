@@ -8,12 +8,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.swen.dms.entity.Document;
-import org.swen.dms.messaging.DocumentEventPublisher;
 import org.swen.dms.messaging.OcrCompletedEvent;
-import org.swen.dms.repository.DocumentRepository;
+import org.swen.dms.repository.jpa.DocumentRepository;
 
 import static org.swen.dms.config.RabbitConfig.QUEUE_GENAI;
-import static org.swen.dms.config.RabbitConfig.QUEUE_OCR;
 
 @Component
 @Profile("genAIWorker")

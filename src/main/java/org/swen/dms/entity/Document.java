@@ -2,6 +2,8 @@ package org.swen.dms.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "documents")
@@ -33,6 +35,14 @@ public class Document {
     @Lob
     @Column(columnDefinition = "TEXT")
     private String ocrSummaryText;
+
+    @ManyToMany(fetch = FetchType.EAGER) // Eager so we see tags immediately when loading a doc
+    @JoinTable(
+            name = "document_categories",
+            joinColumns = @JoinColumn(name = "document_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories = new HashSet<>();
 
     //just to test things constructors
     public Document() {
@@ -71,4 +81,22 @@ public class Document {
 
     public String getOcrSummaryText() { return ocrSummaryText; }
     public void setOcrSummaryText(String ocrSummaryText) { this.ocrSummaryText = ocrSummaryText; }
+
+    public Set<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<Category> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+        category.getDocuments().add(this);
+    }
+
+    public void removeCategory(Category category) {
+        this.categories.remove(category);
+        category.getDocuments().remove(this);
+    }
 }

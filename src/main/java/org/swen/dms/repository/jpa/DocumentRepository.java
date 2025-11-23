@@ -1,4 +1,4 @@
-package org.swen.dms.repository;
+package org.swen.dms.repository.jpa;
 
 import org.swen.dms.entity.Document;
 import org.springframework.data.jpa.repository.JpaRepository;

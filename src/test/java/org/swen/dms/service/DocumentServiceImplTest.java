@@ -14,7 +14,8 @@ import org.swen.dms.exception.NotFoundException;
 import org.swen.dms.messaging.DocumentCreatedEvent;
 import org.swen.dms.messaging.DocumentEventPublisher;
 import org.swen.dms.messaging.DocumentUpdatedEvent;
-import org.swen.dms.repository.DocumentRepository;
+import org.swen.dms.repository.jpa.CategoryRepository;
+import org.swen.dms.repository.jpa.DocumentRepository;
 
 import io.minio.MinioClient;
 
@@ -47,6 +48,9 @@ class DocumentServiceImplTest {
     @InjectMocks
     private DocumentServiceImpl service;
 
+    @Mock
+    private CategoryRepository categoryRepo;
+
     private Document createTestDocument(Long id) {
         Document doc = new Document();
         doc.setId(id);
@@ -71,7 +75,7 @@ class DocumentServiceImplTest {
 
         when(repo.save(any(Document.class))).thenReturn(savedDoc);
 
-        ResponseEntity<?> result = service.uploadDocument(file, "Test Document");
+        ResponseEntity<?> result = service.uploadDocument(file, "Test Document", null);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         verify(repo).save(any(Document.class));
@@ -93,7 +97,7 @@ class DocumentServiceImplTest {
                 "empty.pdf", "empty.pdf", "application/pdf", new byte[0]
         );
 
-        ResponseEntity<?> result = service.uploadDocument(file, "Test Document");
+        ResponseEntity<?> result = service.uploadDocument(file, "Test Document", null);
 
         assertThat(result.getStatusCode().is4xxClientError()).isTrue();
     }
@@ -108,7 +112,7 @@ class DocumentServiceImplTest {
                 "test.txt", "test.txt", "text/plain", "content".getBytes()
         );
 
-        ResponseEntity<?> result = service.uploadDocument(file, "Test Document");
+        ResponseEntity<?> result = service.uploadDocument(file, "Test Document", null);
 
         assertThat(result.getStatusCode().is4xxClientError()).isTrue();
         assertThat(result.getBody()).asString().contains("Only PDFs allowed");

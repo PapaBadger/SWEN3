@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, retry } from 'rxjs';
 
 /**
  * DTO (Data Transfer Object) representing a Document as exposed by the backend API.
@@ -15,8 +15,14 @@ export interface DocumentDto {
   fileSize?: number;
   uploadedAt?: string;
   ocrText?: string;
+  categories?: Category[];
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 /**
  * DataService
@@ -42,8 +48,21 @@ export class DataService {
    * Fetch all documents from the backend as an observable stream.
    */
   getDocuments(): Observable<DocumentDto[]> {
-    return this.http.get<DocumentDto[]>(this.baseUrl);
+    return this.http.get<DocumentDto[]>(this.baseUrl).pipe(
+      retry({ count: 5, delay: 5000 })
+    );
   }
+
+  /**
+   * GET /api/categories
+   * Fetch all available categories.
+   */
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>('http://localhost:8080/api/categories').pipe(
+      retry({ count: 5, delay: 5000 })
+    );
+  }
+
   /**
    * PUT /api/documents/{id}
    * Update an existing document by id. Returns the updated entity.
@@ -53,7 +72,6 @@ export class DataService {
       this.http.put<DocumentDto>(`${this.baseUrl}/${id}`, patch)
     );
   }
-
 
   getSummaryText(id: number) {
     return this.http.get(`http://localhost:8080/api/documents/${id}/OcrSummaryText`, {
@@ -70,12 +88,22 @@ export class DataService {
     );
   }
 
-
   /**
    * DELETE /api/documents/{id}
    * Remove a document by id.
    */
   deleteDocument(id: number): Promise<void> {
     return firstValueFrom(this.http.delete<void>(`${this.baseUrl}/${id}`));
+  }
+
+  /**
+   * GET /api/search?q=...
+   * Search for documents in Elasticsearch.
+   */
+  searchDocuments(query: string): Observable<DocumentDto[]> {
+    // Note: This points to the new Controller we made in Step 4
+    return this.http.get<DocumentDto[]>('http://localhost:8080/api/search', {
+      params: { q: query }
+    });
   }
 }

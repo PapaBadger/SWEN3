@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.swen.dms.entity.Document;
+import org.swen.dms.repository.jpa.DocumentRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link org.swen.dms.repository.DocumentRepository}.
+ * Integration tests for {@link DocumentRepository}.
  * <p>
  * Uses {@link org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest}
  * with an embedded H2 database.
