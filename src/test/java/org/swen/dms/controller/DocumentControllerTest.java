@@ -65,7 +65,7 @@ class DocumentControllerTest {
 
         // Alternative: Use doReturn instead of when().thenReturn()
         doReturn(ResponseEntity.ok(savedDoc))
-                .when(service).uploadDocument(any(), anyString());
+                .when(service).uploadDocument(any(), anyString(), null);
 
         mvc.perform(multipart("/api/documents/upload")
                         .file(file)
@@ -87,7 +87,7 @@ class DocumentControllerTest {
 
         // Alternative: Use doReturn instead of when().thenReturn()
         doReturn(ResponseEntity.badRequest().body("Nothing uploaded."))
-                .when(service).uploadDocument(any(), anyString());
+                .when(service).uploadDocument(any(), anyString(), null);
 
         mvc.perform(multipart("/api/documents/upload")
                         .file(file)

@@ -50,6 +50,23 @@ services:
       retries: 5
     restart: unless-stopped
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    # 1. FIXED: Renamed to match your Java Config
+    container_name: dms-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
   # === Backend ===
   app:
     build:
@@ -63,24 +80,25 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # 2. FIXED: Wait for Elastic to be healthy
+      elasticsearch:
+        condition: service_healthy
     environment:
-
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
       SPRING_DATASOURCE_USERNAME: dms_admin
       SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
-
 
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: admin
       SPRING_RABBITMQ_PASSWORD: admin
 
+      SPRING_ELASTICSEARCH_URIS: http://dms-elasticsearch:9200
 
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: dms-files
-
 
       OCR_LANG: deu+eng
       OCR_PSM: "3"
@@ -88,11 +106,9 @@ services:
       OCR_DPI: "300"
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/4.00/tessdata
 
-
       GENAI_PROVIDER: "google"
       GENAI_MODEL: "gemini-2.0-flash"
       GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
-
 
     ports:
       - "8080:8080"
@@ -113,9 +129,11 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      # 3. FIXED: Wait for Elastic here too
+      elasticsearch:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: "ocrWorker,genAIWorker"
-
       SERVER_PORT: 8082
 
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
@@ -131,6 +149,8 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: dms-files
+
+      SPRING_ELASTICSEARCH_URIS: http://dms-elasticsearch:9200
 
       OCR_LANG: "deu+eng"
       OCR_PSM: "3"
@@ -150,7 +170,8 @@ services:
     ports:
       - "4200:80"
     depends_on:
-      - app
+      app: # Wait for the Backend App...
+        condition: service_healthy # ...to be fully GREEN before starting Nginx
     restart: unless-stopped
 
 volumes:

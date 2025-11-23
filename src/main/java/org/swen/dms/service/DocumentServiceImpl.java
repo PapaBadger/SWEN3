@@ -1,26 +1,21 @@
 package org.swen.dms.service;
 
 import io.minio.*;
-import io.minio.errors.*;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.swen.dms.entity.Category;
 import org.swen.dms.entity.Document;
 import org.swen.dms.exception.NotFoundException;
 import org.swen.dms.messaging.DocumentEventPublisher;
 import org.swen.dms.messaging.DocumentUpdatedEvent;
-import org.swen.dms.repository.DocumentRepository;
+import org.swen.dms.repository.jpa.CategoryRepository;
+import org.swen.dms.repository.jpa.DocumentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.swen.dms.messaging.DocumentCreatedEvent;
-import org.swen.dms.exception.PersistenceException;
 import org.swen.dms.helper.GenerateFileKey;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.time.Instant;
@@ -45,6 +40,8 @@ public class DocumentServiceImpl implements DocumentService {
 
     GenerateFileKey generateFileKey = new GenerateFileKey();
 
+    private final CategoryRepository categoryRepo;
+
 //    //just testing sth EDIT THIS TESTDOC EVERY TIME YOU DOCKER COMPOSE!!!!
 //    Document testDoc = new Document(
 //            null,
@@ -57,16 +54,17 @@ public class DocumentServiceImpl implements DocumentService {
 
 
 
-    public DocumentServiceImpl(DocumentRepository repo, DocumentEventPublisher publisher, MinioClient minioClient) {
+    public DocumentServiceImpl(DocumentRepository repo, DocumentEventPublisher publisher, MinioClient minioClient, CategoryRepository categoryRepo) {
 
         this.repo = repo;
         this.publisher = publisher;
         this.minioClient = minioClient;
+        this.categoryRepo = categoryRepo;
     }
 
     @Override
     @Transactional
-    public ResponseEntity<?> uploadDocument(MultipartFile file, String documentTitle) {
+    public ResponseEntity<?> uploadDocument(MultipartFile file, String documentTitle, String categoryName) {
         try {
             if (file.isEmpty()) {
                 return ResponseEntity.badRequest().body("Nothing uploaded.");
@@ -82,7 +80,7 @@ public class DocumentServiceImpl implements DocumentService {
                 documentTitle = documentTitle + " (" + count++ + ")";
             }
 
-            if(!documentTitle.endsWith(".pdf")) {
+            if (!documentTitle.endsWith(".pdf")) {
                 documentTitle = documentTitle + ".pdf";
             }
             String fileKey = generateFileKey.generateFileKey();
@@ -95,22 +93,27 @@ public class DocumentServiceImpl implements DocumentService {
                             .contentType("application/pdf")
                             .build()
             );
-                Document doc = new Document();
-                doc.setTitle(documentTitle != null && !documentTitle.isBlank()
-                        ? documentTitle
-                        : file.getOriginalFilename());
-                doc.setFileKey(fileKey);
-                doc.setContentType(file.getContentType());
-                doc.setFileSize(file.getSize());
-                doc.setUploadedAt(LocalDateTime.now());
 
-                Document saved = repo.save(doc);
+            Document doc = new Document();
+            doc.setTitle(documentTitle != null && !documentTitle.isBlank() ? documentTitle : file.getOriginalFilename());
+            doc.setFileKey(fileKey);
+            doc.setContentType(file.getContentType());
+            doc.setFileSize(file.getSize());
+            doc.setUploadedAt(LocalDateTime.now());
 
-                publisher.publishDocumentCreated(
-                        new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now(), "documents", saved.getFileKey())
-                );
+            if (categoryName != null && !categoryName.isBlank()) {
+                Category cat = categoryRepo.findByName(categoryName)
+                        .orElseGet(() -> categoryRepo.save(new Category(categoryName, null)));
+                doc.addCategory(cat);
+            }
 
-                return ResponseEntity.ok(saved);
+            Document saved = repo.save(doc);
+
+            publisher.publishDocumentCreated(
+                    new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now(), "documents", saved.getFileKey())
+            );
+
+            return ResponseEntity.ok(saved);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError()

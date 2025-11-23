@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, NgZone, Component} from '@angular/core';
+import {ChangeDetectorRef, NgZone, Component, OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -7,8 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
-import { DataService, DocumentDto } from '../DataService/DataService';
+import {Category, DataService, DocumentDto} from '../DataService/DataService';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'button-overview-example',
@@ -25,11 +26,12 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
     MatInputModule,
     MatDividerModule,
     MatProgressSpinnerModule,
+    MatSelectModule
   ]
 })
-export class ButtonOverviewExample {
+export class ButtonOverviewExample implements OnInit{
   documents: DocumentDto[] = [];
-  displayedColumns = ['id','title','contentType','fileSize','uploadedAt','actions'];
+  displayedColumns = ['id', 'title', 'categories', 'contentType', 'fileSize', 'uploadedAt', 'actions'];
 
   expandedId: number | null = null;
   ocrState = new Map<number, { loading: boolean; text?: string; error?: string }>();
@@ -47,7 +49,26 @@ export class ButtonOverviewExample {
   uploading = false;
   uploadResult?: string;
 
+  searchTerm: string = '';
+  availableCategories: Category[] = [];
+  uploadCategory = '';
+
+  readonly MAX_SIZE_MB = 10;
+
   constructor(private data: DataService, private cdr: ChangeDetectorRef, private zone: NgZone) {}
+
+  // Load categories when component starts
+  ngOnInit() {
+    this.loadCategories();
+    this.onGet(); // (Assuming you want to load docs on start too)
+  }
+
+  loadCategories() {
+    this.data.getCategories().subscribe({
+      next: (cats) => this.availableCategories = cats,
+      error: (err) => console.error('Failed to load categories', err)
+    });
+  }
 
   private setOcrState(id: number, state: { loading: boolean; text?: string; error?: string }) {
     const next = new Map(this.ocrState);
@@ -77,10 +98,6 @@ export class ButtonOverviewExample {
     const state = this.ocrState.get(row.id);
     if (state?.text || state?.loading) return;
 
-    if (row.ocrText) {
-      this.setOcrState(row.id, { loading: false, text: row.ocrText });
-      return;
-    }
     this.loadOcrOnce(row.id);
   }
 
@@ -139,8 +156,31 @@ export class ButtonOverviewExample {
   // ----- Upload -----
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
-    if (file && file.type === 'application/pdf') this.selectedFile = file;
-    else { alert('only PDF files.'); this.selectedFile = undefined; }
+
+    if (!file) {
+      this.selectedFile = undefined;
+      return;
+    }
+
+    // Check File Type
+    if (file.type !== 'application/pdf') {
+      alert('Only PDF files are allowed.');
+      this.selectedFile = undefined;
+      // Reset the input so they can try again
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+
+    // Check File Size (MB * 1024 * 1024 = Bytes)
+    const maxBytes = this.MAX_SIZE_MB * 1024 * 1024;
+    if (file.size > maxBytes) {
+      alert(`File is too big! Max size is ${this.MAX_SIZE_MB}MB.`);
+      this.selectedFile = undefined;
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+
+    this.selectedFile = file;
   }
 
   onUpload() {
@@ -151,11 +191,15 @@ export class ButtonOverviewExample {
     formData.append('file', this.selectedFile);
     formData.append('title', this.uploadTitle || this.selectedFile.name);
 
+    if (this.uploadCategory) {
+      formData.append('category', this.uploadCategory);
+    }
     fetch('http://localhost:8080/api/documents/upload', { method: 'POST', body: formData })
       .then(async res => {
         this.onGet(); // lädt Liste & startet ggf. OCR-Polling
         const text = await res.text();
         this.uploadResult = res.ok ? 'upload successful: ' + text : 'Error: ' + text;
+        this.loadCategories();
       })
       .catch(err => this.uploadResult = 'upload failed: ' + err.message)
       .finally(() => this.uploading = false);
@@ -181,5 +225,24 @@ export class ButtonOverviewExample {
     this.data.deleteDocument(id)
       .then(() => this.onGet())
       .finally(() => this.deleting = false);
+  }
+
+// ----- Search -----
+  onSearch() {
+    if (!this.searchTerm.trim()) {
+      // Use 'this.data' (not dataService) and add type '(docs: any)'
+      this.data.getDocuments().subscribe((docs: any) => this.documents = docs);
+      return;
+    }
+
+    // Use 'this.data' here too
+    this.data.searchDocuments(this.searchTerm).subscribe({
+      next: (results: any) => {
+        this.documents = results;
+      },
+      error: (err: any) => {
+        console.error('Search failed:', err);
+      }
+    });
   }
 }

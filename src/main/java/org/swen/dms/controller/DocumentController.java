@@ -35,8 +35,10 @@ public class DocumentController {
 
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file,
-                                    @RequestParam(value = "title", required = false) String title) {
-        return service.uploadDocument(file, title);
+                                    @RequestParam(value = "title", required = false) String title,
+                                    @RequestParam(value = "category", required = false) String category) {
+
+        return service.uploadDocument(file, title, category);
     }
 
     @GetMapping

@@ -15,7 +15,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.swen.dms.messaging.DocumentCreatedEvent;
 import org.swen.dms.messaging.OcrCompletedEvent;
-import org.swen.dms.repository.DocumentRepository;
+import org.swen.dms.repository.jpa.DocumentRepository;
+import org.swen.dms.entity.DocumentSearch;
+import org.swen.dms.repository.search.DocumentSearchRepository;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -44,12 +46,14 @@ public class OcrWorker {
 
     private final DocumentRepository repo;
     private final RabbitTemplate rabbitTemplate;
+    private final DocumentSearchRepository searchRepository;
 
     public OcrWorker(MinioClient minio, ITesseract tess,
-                     @Value("${ocr.dpi:300}") int dpi, DocumentRepository repo, RabbitTemplate rabbitTemplate) {
+                     @Value("${ocr.dpi:300}") int dpi, DocumentRepository repo, RabbitTemplate rabbitTemplate, DocumentSearchRepository searchRepository) {
         this.minio = minio; this.tess = tess; this.dpi = dpi;
         this.repo = repo;
         this.rabbitTemplate = rabbitTemplate;
+        this.searchRepository = searchRepository;
     }
 
     @RabbitListener(queues = QUEUE_OCR)
@@ -66,23 +70,29 @@ public class OcrWorker {
 
             String text = ocrPdfWithPdfBox(tmp, dpi, tess);
 
+            // Save to Postgres
             var doc = repo.findById(e.getId()).orElseThrow(() -> new RuntimeException("Document not found: " + e.getId()));
-
             doc.setOcrText(text);
-
             repo.save(doc);
 
-            //für genAI publishing
-            OcrCompletedEvent event = new OcrCompletedEvent(e.getId());
+            // 4. === SAVE TO ELASTICSEARCH ===
+            try {
+                DocumentSearch esDoc = new DocumentSearch();
+                esDoc.setId(String.valueOf(e.getId()));
+                esDoc.setTitle(e.getTitle());
+                esDoc.setContent(text);
 
+                searchRepository.save(esDoc);
+                log.info("Indexed document {} in Elasticsearch", e.getId());
+            } catch (Exception esEx) {
+                log.error("Failed to index document in Elasticsearch: {}", esEx.getMessage());
+            }
+            // ================================
+
+            OcrCompletedEvent event = new OcrCompletedEvent(e.getId());
             rabbitTemplate.convertAndSend(EXCHANGE_DOCS, ROUTING_OCR_COMPLETED, event);
 
-            log.info("OCR text saved for id={} ({} chars)", e.getId(), text.length());
-
             log.info("OCR done id={} ({} chars)", e.getId(), text.length());
-//            log.info("DOCUMENT TEXT: {}", text);
-            log.info("DOCUMENT TEXT FROM DB: ={}", doc.getOcrText());
-            log.info("OCR SUMMARY------------------------- = {}", doc.getOcrSummaryText());
 
         } catch (Exception ex) {
             log.error("OCR failed id={}: {}", e.getId(), ex.getMessage(), ex);

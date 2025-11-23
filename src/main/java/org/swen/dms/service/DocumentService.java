@@ -20,7 +20,7 @@ public interface DocumentService {
     Document findById(Long id);
     Document update(Long id, Document update);
     void delete(Long id);
-    ResponseEntity<?> uploadDocument(MultipartFile file, String documentTitle);
+    ResponseEntity<?> uploadDocument(MultipartFile file, String documentTitle, String categoryName);
     boolean existsByTitle(String title);
     ResponseEntity<byte[]> downloadDocument(Long id);
     String getOcrSummaryTextFromDB(long id);
