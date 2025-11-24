@@ -245,4 +245,27 @@ export class ButtonOverviewExample implements OnInit{
       }
     });
   }
+
+  //=================================================================
+  //=========================== Top secret ==========================
+  //=================================================================
+
+  readonly gifPool = [
+    'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXFpem01ZjFkZTNoajFhOGZkdzh5emUwaTVnOHM4cjM2OXp5c20zOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TcdpZwYDPlWXC/giphy.gif',
+    'https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2hxdHE4MjYxZjJ4dmp3MW05bWllcmNieWVpbWQ4a2FuN3czeHMwbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3BKf0I2PVxAfC/giphy.gif',
+    'https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDliaHJ2OTFvNnI0a2Y1ZHdqZmJyeGE5bndqeXg2M2lzY3R5YWx3eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mFdnWF1RTI7fi/giphy.gif',
+    'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3b2kxOWswd2ZoNmIxcm54MjB2bnN1bHczZDc3dm4zNm51ZHhuMHF4YSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/4KLv24CPUoZ0I/giphy.gif',
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaTFneWFzbmQ0MXJjNWM5end3dTY4dmdhZHJocTZjNWpobHdsZDF2cCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/QxcSqRe0nllClKLMDn/giphy.gif',
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmtjeXZjdmpzdjBxczE1OHJ0ajM4dGE3bXN1OHR2MjV2aXhlODA2cyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/nbKKMfmeDknzq/giphy.gif'
+  ];
+
+  private rowGifMap = new Map<number, string>();
+
+  getGif(id: number): string {
+    if (!this.rowGifMap.has(id)) {
+      const randomGif = this.gifPool[Math.floor(Math.random() * this.gifPool.length)];
+      this.rowGifMap.set(id, randomGif);
+    }
+    return `url('${this.rowGifMap.get(id)}')`;
+  }
 }

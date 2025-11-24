@@ -18,6 +18,8 @@
 .detail {
   padding: 16px;
   border-top: 1px solid rgba(0,0,0,0.06);
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
 }
 
 .detail-header {
@@ -25,6 +27,21 @@
   align-items: center;
   margin-bottom: 12px;
 }
+
+.mat-column-detail {
+  --random-gif: none;
+}
+
+.mat-column-detail:hover {
+
+  background-image: var(--random-gif);
+  background-position: right center;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  opacity: 20%;
+  cursor: pointer;
+}
+
 .spacer { flex: 1; }
 
 .center {
