@@ -148,7 +148,7 @@
       <!-- Detail Row: OCR -->
       <ng-container matColumnDef="detail">
         <!-- <td mat-cell *matCellDef="let d" [attr.colspan]="displayedColumns.length"> -->
-        <td mat-cell *matCellDef="let d" [attr.colspan]="displayedColumns.length" [style.--random-gif]="getGif(d.id)">
+        <td mat-cell *matCellDef="let d" [attr.colspan]="displayedColumns.length" [style.--random-gif]="getGif(d.id)" [class.is-expanded]="expandedId === d.id">
           <div class="detail" *ngIf="expandedId === d.id">
             <div class="detail-header">
               <strong>PDF SUMMARY</strong>
