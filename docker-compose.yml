@@ -33,7 +33,6 @@ services:
 
   minio:
     image: quay.io/minio/minio:latest
-    container_name: minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -52,8 +51,6 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
-    # 1. FIXED: Renamed to match your Java Config
-    container_name: dms-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -80,7 +77,6 @@ services:
         condition: service_started
       minio:
         condition: service_started
-      # 2. FIXED: Wait for Elastic to be healthy
       elasticsearch:
         condition: service_healthy
     environment:
@@ -93,7 +89,7 @@ services:
       SPRING_RABBITMQ_USERNAME: admin
       SPRING_RABBITMQ_PASSWORD: admin
 
-      SPRING_ELASTICSEARCH_URIS: http://dms-elasticsearch:9200
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
 
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
@@ -121,6 +117,9 @@ services:
     restart: unless-stopped
 
   worker-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: pat/swen-dms:latest
     depends_on:
       db:
@@ -129,7 +128,6 @@ services:
         condition: service_started
       minio:
         condition: service_started
-      # 3. FIXED: Wait for Elastic here too
       elasticsearch:
         condition: service_healthy
     environment:
@@ -150,7 +148,7 @@ services:
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: dms-files
 
-      SPRING_ELASTICSEARCH_URIS: http://dms-elasticsearch:9200
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
 
       OCR_LANG: "deu+eng"
       OCR_PSM: "3"
@@ -160,7 +158,7 @@ services:
 
       GENAI_PROVIDER: "google"
       GENAI_MODEL: "gemini-2.0-flash"
-      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
+      GENAI_API_KEY: ${GOOGLE_API_KEY}
     ports:
       - "8082:8082"
     restart: unless-stopped
