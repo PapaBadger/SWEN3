@@ -5,6 +5,7 @@ import com.google.genai.types.GenerateContentResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.swen.dms.entity.Document;
@@ -21,9 +22,11 @@ public class GenAIWorker {
 
     private final Client client;
 
-    public GenAIWorker(DocumentRepository repo) {
+    public GenAIWorker(DocumentRepository repo,
+                       @Value("${GENAI_API_KEY}") String apiKey) {
         this.repo = repo;
-        String apiKey = "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio";
+
+        // Use the injected variable
         this.client = Client.builder().apiKey(apiKey).build();
     }
 
