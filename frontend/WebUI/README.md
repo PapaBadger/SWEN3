@@ -57,3 +57,10 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+
+!!! The fun little gifs are all added in the button directory. 
+-
+- button-component.html at line 151
+- button.component.ts lines 249-271
+- button-component.css lines 31-43

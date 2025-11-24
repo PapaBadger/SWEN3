@@ -12,9 +12,17 @@ RUN mvn -q -DskipTests package
 
 # ===== 2) Runtime stage =====
 FROM eclipse-temurin:21-jre-jammy
+
+# === UPDATE: Added 'curl' to the install list ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng libtesseract-dev \
+    tesseract-ocr \
+    tesseract-ocr-deu \
+    tesseract-ocr-eng \
+    libtesseract-dev \
+    curl \
  && rm -rf /var/lib/apt/lists/*
+
+
 WORKDIR /app
 
 # Copy the fat jar (adjust JAR name if artifactId/version differs)
