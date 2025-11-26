@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: dms
-      POSTGRES_USER: dms_admin
-      POSTGRES_PASSWORD: dmsIsVeryCool123
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dms_admin -d dms"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       retries: 5
       start_period: 5s
@@ -22,8 +22,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
       interval: 5s
@@ -35,8 +35,8 @@ services:
     image: quay.io/minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - "9000:9000"   # S3 API
       - "9001:9001"   # Web Console
@@ -82,20 +82,20 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
-      SPRING_DATASOURCE_USERNAME: dms_admin
-      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
 
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: admin
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
 
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: dms-files
 
       OCR_LANG: deu+eng
@@ -106,7 +106,7 @@ services:
 
       GENAI_PROVIDER: "google"
       GENAI_MODEL: "gemini-2.0-flash"
-      GENAI_API_KEY: "AIzaSyBT4TXaT7GNs5nttFlBvTjCYPPCpVhErio"
+      GENAI_API_KEY: ${GOOGLE_API_KEY}
 
     ports:
       - "8080:8080"
@@ -136,18 +136,18 @@ services:
       SPRING_PROFILES_ACTIVE: "ocrWorker,genAIWorker"
       SERVER_PORT: 8082
 
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dms
-      SPRING_DATASOURCE_USERNAME: dms_admin
-      SPRING_DATASOURCE_PASSWORD: dmsIsVeryCool123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
 
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: admin
-      SPRING_RABBITMQ_PASSWORD: admin
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: dms-files
 
       SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
@@ -170,8 +170,8 @@ services:
     ports:
       - "4200:80"
     depends_on:
-      app: # Wait for the Backend App...
-        condition: service_healthy # ...to be fully GREEN before starting Nginx
+      app:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
