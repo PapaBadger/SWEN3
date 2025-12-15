@@ -3,14 +3,13 @@
 ## RUNNING THE APP WITH DOCKER
 
 - go into the terminal in IntelliJ
-- Command: `wsl`
-- Command: `docker compose up -d --build`
-- Command for showing logs: `docker compose logs -f app`
+- Command: `docker-compose up -d --build`
+- Command for showing logs: `docker-compose logs -f app`
 
 ## WHEN CHANGING DB SCHEMA DO THE FOLLOWING:
-docker compose down -v (used for a clean reset, all data gets deleted too)
+docker-compose down -v (used for a clean reset, all data gets deleted too)
 
-docker compose up -d --build
+docker-compose up -d --build
 
 ## Connecting to localhost
 
@@ -32,7 +31,7 @@ docker compose up -d --build
 
 ## Proof
 
-- ```docker compose exec db psql -U dms_admin -d dms -c "SELECT id, title, access_count FROM documents;"```
+- ```docker-compose exec db psql -U dms_admin -d dms -c "SELECT id, title, access_count FROM documents;"```
 
 ## STARTING THE TESTS
 
