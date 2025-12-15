@@ -11,25 +11,21 @@
    the XML files. Ensure the input folder and filename patterns are configurable.
    Provide a sample XML file to demonstrate the functionality.
    Ensure that processed XML files are appropriately archived or removed to prevent redundant
-   processing.
+   processing. `done`
 3. Project finalization
 4. Prepare for the final code-review
 
 ## MUST-HAVE Check Criteria:
 
-- No build error 
+- No build error `done`
 - docker compose up starts all required containers `done`
 - Provided integration-test (write an HOWTO in README.md) will be executed and should run
   successfully to the end. `done`
 - The batch process must successfully read the sample XML file, process the data, and persist it
-  in the database as demonstrated by relevant database queries.
+  in the database as demonstrated by relevant database queries. `done`
 
-
-
-# Unit tests schreiben!!! `done`
 
 # TODO EXTRA
-.env file einfügen `done`
-@Profile vielleciht wieder ändern in ocrworker und genaiworker, ist nämlich unnötig
-UNIT TESTS!!!! `done 92% coverage`
-CATEGORIES IM FRONTEND AUSWÄHLEN (DROPDOWN MENU)
+- .env file einfügen `done`
+- UNIT TESTS!!!! `done 92% coverage`
+- CATEGORIES IM FRONTEND AUSWÄHLEN (DROPDOWN MENU)
