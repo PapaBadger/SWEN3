@@ -36,6 +36,8 @@ public class Document {
     @Column(columnDefinition = "TEXT")
     private String ocrSummaryText;
 
+    private Long accessCount = 0L;
+
     @ManyToMany(fetch = FetchType.EAGER) // Eager so we see tags immediately when loading a doc
     @JoinTable(
             name = "document_categories",
@@ -89,6 +91,10 @@ public class Document {
     public void setCategories(Set<Category> categories) {
         this.categories = categories;
     }
+
+    public Long getAccessCount() { return accessCount; }
+
+    public void setAccessCount(Long accessCount) { this.accessCount = accessCount; }
 
     public void addCategory(Category category) {
         this.categories.add(category);
