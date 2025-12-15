@@ -18,8 +18,6 @@ public class Category {
 
     private String description;
 
-    // We use JsonIgnore here so when we ask for a Category,
-    // it doesn't try to load all its 10,000 documents (Infinite recursion prevention)
     @JsonIgnore
     @ManyToMany(mappedBy = "categories")
     private Set<Document> documents = new HashSet<>();
@@ -31,7 +29,7 @@ public class Category {
         this.description = description;
     }
 
-    // --- Getters & Setters ---
+    //  Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

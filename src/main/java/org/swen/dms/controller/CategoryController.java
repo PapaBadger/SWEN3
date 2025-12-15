@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories")
-@CrossOrigin(origins = "http://localhost:4200") // Best practice: specific origin
+@CrossOrigin(origins = "http://localhost:4200")
 public class CategoryController {
 
     private final CategoryService service;
@@ -19,20 +19,17 @@ public class CategoryController {
         this.service = service;
     }
 
-    // 1. Get all available categories
     @GetMapping
     public List<Category> getAllCategories() {
         return service.getAllCategories();
     }
 
-    // 2. Create a new category
     @PostMapping
     public ResponseEntity<Category> createCategory(@RequestParam String name, @RequestParam(required = false) String description) {
         Category created = service.createCategory(name, description);
         return ResponseEntity.ok(created);
     }
 
-    // 3. Assign a category to a document
     @PostMapping("/{categoryId}/assign/{docId}")
     public ResponseEntity<?> assignCategory(@PathVariable Long categoryId, @PathVariable Long docId) {
         service.assignCategoryToDoc(categoryId, docId);
@@ -40,7 +37,6 @@ public class CategoryController {
         return ResponseEntity.ok(Map.of("message", "Category assigned successfully"));
     }
 
-    // 4. Remove a category from a document
     @DeleteMapping("/{categoryId}/remove/{docId}")
     public ResponseEntity<?> removeCategory(@PathVariable Long categoryId, @PathVariable Long docId) {
         service.removeCategoryFromDoc(categoryId, docId);

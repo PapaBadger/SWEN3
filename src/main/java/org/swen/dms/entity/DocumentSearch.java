@@ -5,19 +5,19 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-@Document(indexName = "documents") // This creates an index called 'documents'
+@Document(indexName = "documents")
 public class DocumentSearch {
 
     @Id
-    private String id; // We will use the same ID as the PostgreSQL DB
+    private String id;
 
     @Field(type = FieldType.Text)
     private String title;
 
     @Field(type = FieldType.Text)
-    private String content; // This will store the OCR text
+    private String content;
 
-    // --- Constructors ---
+    // Constructors
     public DocumentSearch() {}
 
     public DocumentSearch(String id, String title, String content) {
@@ -26,7 +26,7 @@ public class DocumentSearch {
         this.content = content;
     }
 
-    // --- Getters and Setters ---
+    //  Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

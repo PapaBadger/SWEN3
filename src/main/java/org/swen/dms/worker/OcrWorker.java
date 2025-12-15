@@ -75,7 +75,6 @@ public class OcrWorker {
             doc.setOcrText(text);
             repo.save(doc);
 
-            // 4. === SAVE TO ELASTICSEARCH ===
             try {
                 DocumentSearch esDoc = new DocumentSearch();
                 esDoc.setId(String.valueOf(e.getId()));
@@ -87,7 +86,6 @@ public class OcrWorker {
             } catch (Exception esEx) {
                 log.error("Failed to index document in Elasticsearch: {}", esEx.getMessage());
             }
-            // ================================
 
             OcrCompletedEvent event = new OcrCompletedEvent(e.getId());
             rabbitTemplate.convertAndSend(EXCHANGE_DOCS, ROUTING_OCR_COMPLETED, event);

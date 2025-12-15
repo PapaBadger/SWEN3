@@ -34,11 +34,8 @@ public class AccessLogImporter {
         this.inputFolderPath = inputFolderPath;
     }
 
-    /**
-     * Runs every day at 01:00 AM.
-     * Cron format: Second, Minute, Hour, Day, Month, Weekday
-     */
-    @Scheduled(cron = "0 0 1 * * ?")
+
+    @Scheduled(fixedDelay = 60000)
     @Transactional
     public void processAccessLogs() {
         log.info("Batch process started: Checking for XML files in {}", inputFolderPath);

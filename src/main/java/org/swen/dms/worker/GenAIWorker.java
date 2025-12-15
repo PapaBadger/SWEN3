@@ -21,7 +21,6 @@ public class GenAIWorker {
     private static final Logger log = LoggerFactory.getLogger(GenAIWorker.class);
     private final DocumentRepository repo;
 
-    // We keep Client here for production use
     private final Client client;
 
     @Autowired
@@ -30,7 +29,6 @@ public class GenAIWorker {
         this.client = Client.builder().apiKey(apiKey).build();
     }
 
-    // Protected constructor for testing (lets us pass null client)
     protected GenAIWorker(DocumentRepository repo) {
         this.repo = repo;
         this.client = null;
@@ -41,7 +39,6 @@ public class GenAIWorker {
      * In production, it calls Google. In tests, we override this to return a string.
      */
     protected String callGenAiApi(String prompt) {
-        // This is the ONLY place that touches the hidden 'Models' class
         GenerateContentResponse response = client.models
                 .generateContent("gemini-2.5-flash", prompt, null);
         return response.text();
@@ -51,7 +48,6 @@ public class GenAIWorker {
         try {
             String prompt = "Summarize the following document in German:\n\n" + ocrText;
 
-            // Call our wrapper method instead of 'client.models...' directly
             return callGenAiApi(prompt);
 
         } catch (Exception e) {

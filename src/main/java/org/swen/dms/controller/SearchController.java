@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/search")
-@CrossOrigin(origins = "http://localhost:4200") // Allows your Angular frontend to access this
+@CrossOrigin(origins = "http://localhost:4200")
 public class SearchController {
 
     private final SearchService searchService;
@@ -17,7 +17,6 @@ public class SearchController {
         this.searchService = searchService;
     }
 
-    // Usage: GET http://localhost:8080/api/search?q=invoice
     @GetMapping
     public List<DocumentSearch> search(@RequestParam("q") String query) {
         return searchService.searchDocuments(query);
