@@ -20,27 +20,40 @@ import static org.swen.dms.config.RabbitConfig.QUEUE_GENAI;
 public class GenAIWorker {
     private static final Logger log = LoggerFactory.getLogger(GenAIWorker.class);
     private final DocumentRepository repo;
+
+    // We keep Client here for production use
     private final Client client;
 
     @Autowired
     public GenAIWorker(DocumentRepository repo, @Value("${GENAI_API_KEY}") String apiKey) {
-        this(repo, Client.builder().apiKey(apiKey).build());
+        this.repo = repo;
+        this.client = Client.builder().apiKey(apiKey).build();
     }
 
-    // --- Constructor 2: For Unit Tests ---
-    public GenAIWorker(DocumentRepository repo, Client client) {
+    // Protected constructor for testing (lets us pass null client)
+    protected GenAIWorker(DocumentRepository repo) {
         this.repo = repo;
-        this.client = client;
+        this.client = null;
+    }
+
+    /**
+     * EXTRACTED METHOD: This isolates the "hidden" Google types.
+     * In production, it calls Google. In tests, we override this to return a string.
+     */
+    protected String callGenAiApi(String prompt) {
+        // This is the ONLY place that touches the hidden 'Models' class
+        GenerateContentResponse response = client.models
+                .generateContent("gemini-2.5-flash", prompt, null);
+        return response.text();
     }
 
     public String summarize(String ocrText) {
         try {
             String prompt = "Summarize the following document in German:\n\n" + ocrText;
 
-            GenerateContentResponse response = client.models
-                    .generateContent("gemini-2.5-flash", prompt, null);
+            // Call our wrapper method instead of 'client.models...' directly
+            return callGenAiApi(prompt);
 
-            return response.text();
         } catch (Exception e) {
             System.err.println("GenAI request failed: " + e.getMessage());
             return "[Summary unavailable due to API error]";
@@ -52,6 +65,7 @@ public class GenAIWorker {
         log.info("Got OcrComplete Event!!!" + event);
 
         Document doc = repo.findById(event.getDocumentId()).orElse(null);
+        if (doc == null) return;
 
         String summary = summarize(doc.getOcrText());
         doc.setOcrSummaryText(summary);
