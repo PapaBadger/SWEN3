@@ -167,7 +167,7 @@ services:
       - "8082:8082"
 
     volumes:
-      - /mnt/c/input:/app/input
+      - /input:/app/input
     restart: unless-stopped
 
   frontend:
