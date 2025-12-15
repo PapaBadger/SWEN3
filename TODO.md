@@ -20,7 +20,7 @@
 - No build error 
 - docker compose up starts all required containers `done`
 - Provided integration-test (write an HOWTO in README.md) will be executed and should run
-  successfully to the end.
+  successfully to the end. `done`
 - The batch process must successfully read the sample XML file, process the data, and persist it
   in the database as demonstrated by relevant database queries.
 
