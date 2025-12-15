@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
+import org.swen.dms.entity.Category;
 import org.swen.dms.entity.Document;
 import org.swen.dms.exception.NotFoundException;
 import org.swen.dms.messaging.DocumentCreatedEvent;
@@ -231,5 +232,92 @@ class DocumentServiceImplTest {
 
         assertThat(result).isTrue();
         verify(repo).existsByTitle("Test Document");
+    }
+
+    @Test
+    void downloadDocument_Success() throws Exception {
+        // Arrange
+        Long docId = 1L;
+        Document doc = createTestDocument(docId);
+        doc.setContentType("application/pdf");
+        byte[] expectedBytes = "PDF CONTENT".getBytes();
+
+        when(repo.findById(docId)).thenReturn(Optional.of(doc));
+
+        // Mocking MinIO Response
+        io.minio.GetObjectResponse mockResponse = mock(io.minio.GetObjectResponse.class);
+        when(mockResponse.readAllBytes()).thenReturn(expectedBytes);
+
+        when(minioClient.getObject(any(io.minio.GetObjectArgs.class)))
+                .thenReturn(mockResponse);
+
+        // Act
+        ResponseEntity<byte[]> response = service.downloadDocument(docId);
+
+        // Assert
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isEqualTo(expectedBytes);
+        assertThat(response.getHeaders().getContentType().toString())
+                .contains("application/pdf");
+    }
+
+    @Test
+    void uploadDocument_WithCategory() throws Exception {
+        // Arrange
+        MultipartFile file = new MockMultipartFile("test.pdf", "test.pdf", "application/pdf", "data".getBytes());
+        String categoryName = "Invoices";
+
+        // Stub repo to return the saved doc
+        when(repo.save(any(Document.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Stub category repo to return empty (simulating new category creation)
+        when(categoryRepo.findByName(categoryName)).thenReturn(Optional.empty());
+        when(categoryRepo.save(any(Category.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Act
+        service.uploadDocument(file, "My Doc", categoryName);
+
+        // Assert
+        // Verify that the Category Repo was actually queried and saved
+        verify(categoryRepo).findByName(categoryName);
+        verify(categoryRepo).save(argThat(cat -> cat.getName().equals(categoryName)));
+    }
+
+    @Test
+    void uploadDocument_RenamesOnCollision() throws Exception {
+        // Arrange
+        MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", "data".getBytes());
+
+        // Scenario: "Report.pdf" exists. "Report (1).pdf" exists. "Report (2).pdf" is free.
+        when(repo.existsByTitle("Report.pdf")).thenReturn(true);
+        when(repo.existsByTitle("Report (1).pdf")).thenReturn(true);
+        when(repo.existsByTitle("Report (2).pdf")).thenReturn(false);
+
+        when(repo.save(any(Document.class))).thenAnswer(i -> i.getArgument(0));
+
+        // Act
+        service.uploadDocument(file, "Report", null);
+
+        // Assert
+        ArgumentCaptor<Document> docCaptor = ArgumentCaptor.forClass(Document.class);
+        verify(repo).save(docCaptor.capture());
+
+        assertThat(docCaptor.getValue().getTitle()).isEqualTo("Report (2).pdf");
+    }
+
+    @Test
+    void delete_existing_removesFromMinioAndDb() throws Exception {
+        // Arrange
+        Document doc = createTestDocument(1L);
+        doc.setFileKey("some-key-123");
+        when(repo.findById(1L)).thenReturn(Optional.of(doc));
+
+        // Act
+        service.delete(1L);
+
+        // Assert
+        verify(repo).deleteById(1L);
+        // Verify MinIO client was called with RemoveObjectArgs
+        verify(minioClient).removeObject(any(io.minio.RemoveObjectArgs.class));
     }
 }

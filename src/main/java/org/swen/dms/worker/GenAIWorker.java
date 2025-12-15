@@ -5,6 +5,7 @@ import com.google.genai.types.GenerateContentResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -19,15 +20,17 @@ import static org.swen.dms.config.RabbitConfig.QUEUE_GENAI;
 public class GenAIWorker {
     private static final Logger log = LoggerFactory.getLogger(GenAIWorker.class);
     private final DocumentRepository repo;
-
     private final Client client;
 
-    public GenAIWorker(DocumentRepository repo,
-                       @Value("${GENAI_API_KEY}") String apiKey) {
-        this.repo = repo;
+    @Autowired
+    public GenAIWorker(DocumentRepository repo, @Value("${GENAI_API_KEY}") String apiKey) {
+        this(repo, Client.builder().apiKey(apiKey).build());
+    }
 
-        // Use the injected variable
-        this.client = Client.builder().apiKey(apiKey).build();
+    // --- Constructor 2: For Unit Tests ---
+    public GenAIWorker(DocumentRepository repo, Client client) {
+        this.repo = repo;
+        this.client = client;
     }
 
     public String summarize(String ocrText) {

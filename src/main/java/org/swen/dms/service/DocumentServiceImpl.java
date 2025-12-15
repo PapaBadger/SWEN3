@@ -74,17 +74,32 @@ public class DocumentServiceImpl implements DocumentService {
                 return ResponseEntity.badRequest().body("Only PDFs allowed!");
             }
 
-            //no collisions in names
-            int count = 1;
-            while (existsByTitle(documentTitle + ".pdf")) {
-                documentTitle = documentTitle + " (" + count++ + ")";
+            // 1. Determine the effective title (use filename if title is missing)
+            String effectiveTitle = (documentTitle != null && !documentTitle.isBlank())
+                    ? documentTitle
+                    : file.getOriginalFilename();
+
+            // 2. Strip ".pdf" extension if the user typed it in manually, to avoid "Report.pdf.pdf"
+            if (effectiveTitle != null && effectiveTitle.toLowerCase().endsWith(".pdf")) {
+                effectiveTitle = effectiveTitle.substring(0, effectiveTitle.length() - 4);
             }
 
-            if (!documentTitle.endsWith(".pdf")) {
-                documentTitle = documentTitle + ".pdf";
+            // 3. Keep the original clean title as a base for renaming
+            String baseTitle = effectiveTitle;
+            int count = 1;
+
+            // 4. Check for collisions.
+            //    If "Report.pdf" exists, try "Report (1).pdf", then "Report (2).pdf", etc.
+            while (existsByTitle(effectiveTitle + ".pdf")) {
+                effectiveTitle = baseTitle + " (" + count++ + ")";
             }
+
+            // 5. Finally add the extension back
+            String finalFileName = effectiveTitle + ".pdf";
+
             String fileKey = generateFileKey.generateFileKey();
 
+            // Upload to MinIO
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket("documents")
@@ -94,8 +109,9 @@ public class DocumentServiceImpl implements DocumentService {
                             .build()
             );
 
+            // Save metadata to DB
             Document doc = new Document();
-            doc.setTitle(documentTitle != null && !documentTitle.isBlank() ? documentTitle : file.getOriginalFilename());
+            doc.setTitle(finalFileName);
             doc.setFileKey(fileKey);
             doc.setContentType(file.getContentType());
             doc.setFileSize(file.getSize());
@@ -109,11 +125,13 @@ public class DocumentServiceImpl implements DocumentService {
 
             Document saved = repo.save(doc);
 
+            // Publish Event
             publisher.publishDocumentCreated(
                     new DocumentCreatedEvent(saved.getId(), saved.getTitle(), Instant.now(), "documents", saved.getFileKey())
             );
 
             return ResponseEntity.ok(saved);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError()
