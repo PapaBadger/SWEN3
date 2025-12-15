@@ -3,12 +3,15 @@ package org.swen.dms.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import org.swen.dms.entity.Document;
 import org.swen.dms.service.DocumentService;
 
@@ -18,6 +21,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,7 +32,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * and mocks {@link org.swen.dms.service.DocumentService}.
  * Ensures REST endpoints behave correctly (HTTP status, JSON output).
  */
-@WebMvcTest(DocumentController.class)
+@WebMvcTest(controllers = DocumentController.class,
+    excludeAutoConfiguration = {RabbitAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
 class DocumentControllerTest {
 
     @Autowired
@@ -65,7 +71,11 @@ class DocumentControllerTest {
 
         // Alternative: Use doReturn instead of when().thenReturn()
         doReturn(ResponseEntity.ok(savedDoc))
-                .when(service).uploadDocument(any(), anyString(), null);
+                .when(service).uploadDocument(
+                        any(),          // Matcher 1
+                        anyString(),    // Matcher 2
+                        isNull()        // Matcher 3
+                );
 
         mvc.perform(multipart("/api/documents/upload")
                         .file(file)
@@ -87,7 +97,11 @@ class DocumentControllerTest {
 
         // Alternative: Use doReturn instead of when().thenReturn()
         doReturn(ResponseEntity.badRequest().body("Nothing uploaded."))
-                .when(service).uploadDocument(any(), anyString(), null);
+                .when(service).uploadDocument(
+                        any(),          // Matcher 1
+                        anyString(),    // Matcher 2
+                        isNull()        // Matcher 3 (Fixed!)
+                );
 
         mvc.perform(multipart("/api/documents/upload")
                         .file(file)
@@ -141,7 +155,6 @@ class DocumentControllerTest {
         Document updatedDoc = createTestDocument(1L);
         updatedDoc.setTitle("Updated Title");
 
-        // Fix: Use fully qualified class name to resolve ambiguity
         when(service.update(org.mockito.ArgumentMatchers.eq(1L),
                 org.mockito.ArgumentMatchers.any(Document.class)))
                 .thenReturn(updatedDoc);
@@ -162,5 +175,75 @@ class DocumentControllerTest {
                 .andExpect(status().isOk());
 
         verify(service).delete(1L);
+    }
+
+    /**
+     * Verifies that GET /api/documents/{id}/OcrSummaryText returns the raw string content.
+     */
+    @Test
+    void getOcrSummary_Success() throws Exception {
+        String mockSummary = "Total Amount: $500.00";
+
+        when(service.getOcrSummaryTextFromDB(1L)).thenReturn(mockSummary);
+
+        mvc.perform(get("/api/documents/1/OcrSummaryText"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(mockSummary));
+    }
+
+    /**
+     * Verifies that uploading with an optional 'category' parameter
+     * passes that string correctly to the service.
+     */
+    @Test
+    void uploadDocument_WithCategory() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "invoice.pdf", "application/pdf", "data".getBytes()
+        );
+
+        Document savedDoc = createTestDocument(1L);
+
+        // We expect the service to receive "Invoices" as the 3rd argument
+        doReturn(ResponseEntity.ok(savedDoc))
+                .when(service).uploadDocument(any(), anyString(), eq("Invoices"));
+
+        mvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .param("title", "My Invoice")
+                        .param("category", "Invoices")) // User sends category
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * Verifies that downloading a non-existent document returns 404 Not Found.
+     */
+    @Test
+    void downloadDocument_NotFound() throws Exception {
+        // Mock the service returning a 404 response
+        when(service.downloadDocument(999L))
+                .thenReturn(ResponseEntity.notFound().build());
+
+        mvc.perform(get("/api/documents/999/download"))
+                .andExpect(status().isNotFound());
+    }
+
+    /**
+     * Verifies that if no documents exist, an empty JSON list is returned.
+     */
+    @Test
+    void listDocuments_Empty() throws Exception {
+        when(service.findAll()).thenReturn(List.of());
+
+        mvc.perform(get("/api/documents"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0))); // Expects []
+    }
+
+    @Test
+    void listDocuments_ServiceError() throws Exception {
+        when(service.findAll()).thenThrow(new RuntimeException("Database down"));
+
+        mvc.perform(get("/api/documents"))
+                .andExpect(status().isInternalServerError()); // or isBadRequest(), depending on your global handler
     }
 }
