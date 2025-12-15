@@ -1,4 +1,6 @@
-# 1. Show the functionality of use case „document upload“ with an integration-test
+# Sprint 7 TODO
+
+1. Show the functionality of use case „document upload“ with an integration-test `done`
 2. Create an additional application for running the scheduled service that reads daily XML files from
    an input folder to process access
    logs from external systems via a batch process.
@@ -15,8 +17,8 @@
 
 ## MUST-HAVE Check Criteria:
 
-- No build error
-- docker compose up starts all required containers
+- No build error 
+- docker compose up starts all required containers `done`
 - Provided integration-test (write an HOWTO in README.md) will be executed and should run
   successfully to the end.
 - The batch process must successfully read the sample XML file, process the data, and persist it
@@ -24,10 +26,10 @@
 
 
 
-# Unit tests schreiben!!!
+# Unit tests schreiben!!! `done`
 
 # TODO EXTRA
-.env file einfügen
+.env file einfügen `done`
 @Profile vielleciht wieder ändern in ocrworker und genaiworker, ist nämlich unnötig
-UNIT TESTS!!!!
+UNIT TESTS!!!! `done 92% coverage`
 CATEGORIES IM FRONTEND AUSWÄHLEN (DROPDOWN MENU)
