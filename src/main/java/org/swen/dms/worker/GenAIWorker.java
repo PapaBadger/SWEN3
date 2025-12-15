@@ -35,7 +35,7 @@ public class GenAIWorker {
             String prompt = "Summarize the following document in German:\n\n" + ocrText;
 
             GenerateContentResponse response = client.models
-                    .generateContent("gemini-2.0-flash", prompt, null);
+                    .generateContent("gemini-2.5-flash", prompt, null);
 
             return response.text();
         } catch (Exception e) {
