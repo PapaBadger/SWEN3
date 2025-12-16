@@ -10,6 +10,7 @@ import org.swen.dms.entity.Document;
 import org.swen.dms.repository.jpa.DocumentRepository;
 import io.minio.MinioClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.swen.dms.service.SearchService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,8 +19,12 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ActiveProfiles("test") // Uses H2 DB
+@SpringBootTest(
+        properties = {
+                "spring.data.elasticsearch.repositories.enabled=false"
+        }
+)
+@ActiveProfiles("test")
 class AccessLogImporterTest {
 
     @Autowired
@@ -35,6 +40,9 @@ class AccessLogImporterTest {
     // This injects the real importer, but we will call it manually
     @Autowired
     private AccessLogImporter importer;
+
+    @MockitoBean
+    private SearchService searchService;
 
     @Test
     void shouldImportXmlAndCleanupFile(@TempDir Path tempDir) throws IOException {
