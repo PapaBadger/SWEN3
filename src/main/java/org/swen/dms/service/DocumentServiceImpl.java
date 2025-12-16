@@ -42,6 +42,18 @@ public class DocumentServiceImpl implements DocumentService {
 
     private final CategoryRepository categoryRepo;
 
+//    //just testing sth EDIT THIS TESTDOC EVERY TIME YOU DOCKER COMPOSE!!!!
+//    Document testDoc = new Document(
+//            null,
+//            "Testdokument",
+//            "docs/test123avdd.pdf",
+//            "application/pdf",
+//            12345L,
+//            LocalDateTime.now()
+//    );
+
+
+
     public DocumentServiceImpl(DocumentRepository repo, DocumentEventPublisher publisher, MinioClient minioClient, CategoryRepository categoryRepo) {
 
         this.repo = repo;
@@ -62,21 +74,27 @@ public class DocumentServiceImpl implements DocumentService {
                 return ResponseEntity.badRequest().body("Only PDFs allowed!");
             }
 
+            // 1. Determine the effective title (use filename if title is missing)
             String effectiveTitle = (documentTitle != null && !documentTitle.isBlank())
                     ? documentTitle
                     : file.getOriginalFilename();
 
+            // 2. Strip ".pdf" extension if the user typed it in manually, to avoid "Report.pdf.pdf"
             if (effectiveTitle != null && effectiveTitle.toLowerCase().endsWith(".pdf")) {
                 effectiveTitle = effectiveTitle.substring(0, effectiveTitle.length() - 4);
             }
 
+            // 3. Keep the original clean title as a base for renaming
             String baseTitle = effectiveTitle;
             int count = 1;
 
+            // 4. Check for collisions.
+            //    If "Report.pdf" exists, try "Report (1).pdf", then "Report (2).pdf", etc.
             while (existsByTitle(effectiveTitle + ".pdf")) {
                 effectiveTitle = baseTitle + " (" + count++ + ")";
             }
 
+            // 5. Finally add the extension back
             String finalFileName = effectiveTitle + ".pdf";
 
             String fileKey = generateFileKey.generateFileKey();

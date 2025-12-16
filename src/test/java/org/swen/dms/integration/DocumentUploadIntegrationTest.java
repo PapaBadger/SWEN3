@@ -7,13 +7,15 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean; // <--- NEW IMPORT
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.swen.dms.entity.Document;
 import org.swen.dms.repository.jpa.DocumentRepository;
+import org.swen.dms.repository.search.DocumentSearchRepository;
+import org.swen.dms.service.SearchService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +39,12 @@ class DocumentUploadIntegrationTest {
 
     @MockitoBean
     private RabbitTemplate rabbitTemplate;
+
+    @MockitoBean
+    private SearchService searchService;
+
+    @MockitoBean
+    private DocumentSearchRepository documentSearchRepository;
 
     @Test
     void shouldUploadAndPersistDocument() throws Exception {
